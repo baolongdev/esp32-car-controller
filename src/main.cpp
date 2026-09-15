@@ -475,6 +475,7 @@ class BleRxCallbacks : public BLECharacteristicCallbacks {
 
 void setupBle() {
   BLEDevice::init(ACTIVE_DEVICE.bleName);
+  BLEDevice::setPower(ESP_PWR_LVL_P9);
 
   bleServer = BLEDevice::createServer();
   bleServer->setCallbacks(new BleServerCallbacks());
@@ -493,8 +494,15 @@ void setupBle() {
   rx->setCallbacks(new BleRxCallbacks());
 
   service->start();
-  bleServer->getAdvertising()->addServiceUUID(BLE_SERVICE_UUID);
-  bleServer->getAdvertising()->start();
+  BLEAdvertising* advertising = bleServer->getAdvertising();
+  advertising->setName(ACTIVE_DEVICE.bleName);
+  advertising->addServiceUUID(BLE_SERVICE_UUID);
+  // Đưa tên thiết bị vào scan response để Chrome/Web Bluetooth lọc được
+  // namePrefix ESP32-MOTOR ngay cả khi gói quảng bá chính đã đầy.
+  advertising->setScanResponse(true);
+  advertising->setMinPreferred(0x06);
+  advertising->setMaxPreferred(0x12);
+  advertising->start();
 
   setStoppedLed();
 
