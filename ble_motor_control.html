@@ -1916,6 +1916,55 @@
       if (document.hidden) motionButtons.forEach(releaseMotionButton);
     });
     $('emergency').addEventListener('click', () => send('s'));
+
+    // Điều khiển bằng bàn phím: W/A/S/D nhấn giữ để chạy, thả ra để dừng.
+    const keyboardCommandMap = { w: 'f', a: 'l', s: 'b', d: 'r' };
+    let keyboardButton = null;
+    let keyboardKey = null;
+    const isTypingTarget = target => target && (
+      target.matches('input, textarea, select') || target.isContentEditable
+    );
+
+    document.addEventListener('keydown', e => {
+      if (isTypingTarget(e.target)) return;
+
+      if (e.code === 'Space' || e.key === 'Escape') {
+        e.preventDefault();
+        keyboardButton = null;
+        keyboardKey = null;
+        motionButtons.forEach(releaseMotionButton);
+        send('s');
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+      const command = keyboardCommandMap[key];
+      if (!command || e.repeat) return;
+
+      const button = motionButtons.find(btn => btn.dataset.command === command);
+      if (!button) return;
+      e.preventDefault();
+      motionButtons.forEach(other => { if (other !== button) releaseMotionButton(other); });
+      keyboardButton = button;
+      keyboardKey = key;
+      button.classList.add('active');
+      send(command);
+    });
+
+    document.addEventListener('keyup', e => {
+      const key = e.key.toLowerCase();
+      if (key !== keyboardKey || !keyboardButton) return;
+      e.preventDefault();
+      releaseMotionButton(keyboardButton);
+      keyboardButton = null;
+      keyboardKey = null;
+    });
+
+    window.addEventListener('blur', () => {
+      keyboardButton = null;
+      keyboardKey = null;
+      motionButtons.forEach(releaseMotionButton);
+    });
   </script>
 </body>
 
