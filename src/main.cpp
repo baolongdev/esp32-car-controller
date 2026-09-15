@@ -22,6 +22,7 @@ Adafruit_NeoPixel debugLed(
     NEO_GRB + NEO_KHZ800);
 Servo steeringServo;
 int servoAngle = 0;
+bool servoReady = false;
 
 constexpr char BLE_SERVICE_UUID[] = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
 constexpr char BLE_RX_UUID[] = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";
@@ -145,6 +146,15 @@ void turnLeft(int pwm) { setMotors(-pwm, pwm); }
 void turnRight(int pwm) { setMotors(pwm, -pwm); }
 
 void setServoAngle(int angle) {
+  if (!servoReady) {
+    steeringServo.setPeriodHertz(50);
+    steeringServo.attach(ACTIVE_DEVICE.servoPin, 500, 2400);
+    servoReady = steeringServo.attached();
+    Serial.printf("Servo init GPIO%d: %s\n", ACTIVE_DEVICE.servoPin,
+                  servoReady ? "OK" : "FAIL");
+  }
+  if (!servoReady) return;
+
   servoAngle = constrain(angle, 0, 180);
   steeringServo.write(servoAngle);
   Serial.printf("Servo, goc=%d\n", servoAngle);
@@ -538,10 +548,6 @@ void setup() {
     digitalWrite(pin, LOW);
     ledcAttach(pin, PWM_FREQUENCY, PWM_RESOLUTION);
   }
-
-  steeringServo.setPeriodHertz(50);
-  steeringServo.attach(ACTIVE_DEVICE.servoPin, 500, 2400);
-  setServoAngle(0);
 
   stopMotors();
 
