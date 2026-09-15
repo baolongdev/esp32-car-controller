@@ -13,6 +13,7 @@ struct DeviceConfig {
   bool leftMotorInverted;
   bool rightMotorInverted;
   int8_t debugLedPin;
+  uint8_t servoPin;
 };
 
 constexpr uint8_t DEVICE_COUNT = 6;

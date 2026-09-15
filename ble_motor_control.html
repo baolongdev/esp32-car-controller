@@ -597,6 +597,43 @@
       }
     }
 
+    .servo-control {
+      display: grid;
+      gap: 4px;
+      margin-top: 6px;
+      min-width: 0;
+    }
+
+    .servo-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .servo-heading strong {
+      color: var(--accent-light);
+      white-space: nowrap;
+    }
+
+    .servo-toggle {
+      width: 100%;
+      min-height: 36px;
+      padding: 6px 10px;
+      border: 1px solid var(--accent);
+      background: #252d33;
+      color: var(--text);
+      font: 700 12px/1.2 Inter, system-ui, sans-serif;
+      white-space: nowrap;
+      touch-action: manipulation;
+    }
+
+    .servo-toggle:not(:disabled):active {
+      background: var(--accent);
+      color: #11161a;
+      transform: translateY(1px);
+    }
+
     @media (orientation:portrait) {
       .status-card {
         order: 1;
@@ -1539,6 +1576,43 @@
         font-size: 10px;
         line-height: 1;
       }
+
+      .servo-control {
+        display: grid;
+        gap: 4px;
+        margin-top: 6px;
+        min-width: 0;
+      }
+
+      .servo-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .servo-heading strong {
+        color: var(--accent-light);
+        white-space: nowrap;
+      }
+
+      .servo-toggle {
+        width: 100%;
+        min-height: 36px;
+        padding: 6px 10px;
+        border: 1px solid var(--accent);
+        background: #252d33;
+        color: var(--text);
+        font: 700 12px/1.2 Inter, system-ui, sans-serif;
+        white-space: nowrap;
+        touch-action: manipulation;
+      }
+
+      .servo-toggle:not(:disabled):active {
+        background: var(--accent);
+        color: #11161a;
+        transform: translateY(1px);
+      }
     }
 
     @media (orientation:portrait) {
@@ -1700,6 +1774,10 @@
       </div>
       <input id="speed" type="range" min="0" max="255" value="180" />
       <div class="range-labels"><span>Chậm</span><span>Nhanh</span></div>
+      <div class="servo-control">
+        <div class="servo-heading"><span class="section-label">Góc servo</span><strong id="servoAngle">0°</strong></div>
+        <button id="servoToggle" class="servo-toggle" type="button" disabled>Đổi sang 150°</button>
+      </div>
     </section>
 
     <div class="control-layout">
@@ -1747,9 +1825,11 @@
     let disconnectHandler = null;
     const $ = id => document.getElementById(id);
     const rotationButtons = [$('turnLeftBtn'), $('turnRightBtn')];
+    const servoToggle = $('servoToggle');
     function setRotationAvailability(enabled) {
       rotationButtons.forEach(button => { button.disabled = !enabled; });
       document.querySelectorAll('[data-command]').forEach(button => { button.disabled = !enabled; });
+      servoToggle.disabled = !enabled;
     }
     setRotationAvailability(false);
     function setSystemStatus(text) { $('systemStatus').textContent = text; }
@@ -1884,6 +1964,13 @@
     });
     $('speed').addEventListener('input', e => { const pwm = e.target.value; const percent = Math.round(pwm / 255 * 100); $('speedValue').textContent = pwm; $('speedPercent').textContent = percent + '%'; e.target.style.setProperty('--progress', percent + '%'); });
     $('speed').dispatchEvent(new Event('input'));
+    let servoAngle = 0;
+    servoToggle.addEventListener('click', () => {
+      servoAngle = servoAngle === 0 ? 150 : 0;
+      $('servoAngle').textContent = servoAngle + '°';
+      servoToggle.textContent = servoAngle === 0 ? 'Đổi sang 150°' : 'Đổi về 0°';
+      send('v' + servoAngle);
+    });
     const motionButtons = [...document.querySelectorAll('[data-command]')].filter(btn => ['f', 'b', 'l', 'r'].includes(btn.dataset.command));
     const activePointerIds = new WeakMap();
     function releaseMotionButton(btn) {

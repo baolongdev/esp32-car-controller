@@ -3,6 +3,7 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <Adafruit_NeoPixel.h>
+#include <ESP32Servo.h>
 #include "device_config.h"
 
 constexpr uint32_t PWM_FREQUENCY = 20000;
@@ -19,6 +20,8 @@ Adafruit_NeoPixel debugLed(
     DEBUG_LED_COUNT,
     ACTIVE_DEVICE.debugLedPin,
     NEO_GRB + NEO_KHZ800);
+Servo steeringServo;
+int servoAngle = 0;
 
 constexpr char BLE_SERVICE_UUID[] = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
 constexpr char BLE_RX_UUID[] = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";
@@ -140,6 +143,12 @@ void moveForward(int pwm) { setMotors(pwm, pwm); }
 void moveBackward(int pwm) { setMotors(-pwm, -pwm); }
 void turnLeft(int pwm) { setMotors(-pwm, pwm); }
 void turnRight(int pwm) { setMotors(pwm, -pwm); }
+
+void setServoAngle(int angle) {
+  servoAngle = constrain(angle, 0, 180);
+  steeringServo.write(servoAngle);
+  Serial.printf("Servo, goc=%d\n", servoAngle);
+}
 
 void applyMotion(char command, int pwm) {
   pwm = constrain(pwm, 0, 255);
@@ -357,6 +366,14 @@ void handleLine(String line, uint16_t connId = ESP_GATT_IF_NONE) {
   const char command = static_cast<char>(
       tolower(static_cast<unsigned char>(line[0])));
 
+  if (command == 'v' && line.length() > 1) {
+    setServoAngle(line.substring(1).toInt());
+    char response[32];
+    snprintf(response, sizeof(response), "SERVO=%d", servoAngle);
+    queueBleMessage(response);
+    return;
+  }
+
   // f100 / b100 / l150 / r150
   if ((command == 'f' || command == 'b' || command == 'l' || command == 'r') &&
       line.length() > 1) {
@@ -511,6 +528,10 @@ void setup() {
     digitalWrite(pin, LOW);
     ledcAttach(pin, PWM_FREQUENCY, PWM_RESOLUTION);
   }
+
+  steeringServo.setPeriodHertz(50);
+  steeringServo.attach(ACTIVE_DEVICE.servoPin, 500, 2400);
+  setServoAngle(0);
 
   stopMotors();
 
