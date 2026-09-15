@@ -1884,8 +1884,9 @@
         // requestDevice phải được gọi trực tiếp từ thao tác bấm nút.
         // Không gọi prompt trước bước này vì sẽ làm mất user gesture.
         const selectedDevice = await navigator.bluetooth.requestDevice({
-          // Lọc theo service giúp phát hiện ESP32 ngay cả khi tên nằm trong scan response.
-          filters: [{ services: [SERVICE] }, { namePrefix: 'ESP32-MOTOR' }],
+          // Không lọc cứng theo tên/service để tránh bỏ sót thiết bị khi
+          // Windows/Chrome đặt tên quảng bá vào scan response.
+          acceptAllDevices: true,
           optionalServices: [SERVICE]
         });
         const password = window.prompt('Nhập mật khẩu kết nối thiết bị:');
