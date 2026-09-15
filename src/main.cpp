@@ -14,7 +14,7 @@ constexpr uint8_t DEBUG_LED_COUNT = 1;
 // Gửi tối đa ~40 state/s. Các state cũ chưa gửi sẽ bị state mới ghi đè,
 // nhờ đó BLE TX không bị backlog khi web kéo slider/gửi lệnh liên tục.
 constexpr uint32_t BLE_NOTIFY_MIN_INTERVAL_MS = 25;
-constexpr bool VERBOSE_BLE_RX = false;
+constexpr bool VERBOSE_BLE_RX = true;
 
 Adafruit_NeoPixel debugLed(
     DEBUG_LED_COUNT,
@@ -381,6 +381,7 @@ void handleLine(String line, uint16_t connId = ESP_GATT_IF_NONE) {
 
     // Motor đổi NGAY khi RX đến. Không chờ notify và không chờ loop timer.
     applyMotion(command, motorSpeed);
+    Serial.printf("Lenh %c, PWM=%d\n", command, motorSpeed);
 
     // TX chỉ giữ state mới nhất, tránh backlog khi slider gửi dày.
     queueMotionState(currentMotion, motorSpeed);
@@ -390,6 +391,7 @@ void handleLine(String line, uint16_t connId = ESP_GATT_IF_NONE) {
   if (command == 's') {
     applyMotion('s', 0);
     queueMotionState('s', 0);
+    Serial.println(F("Dung 2 motor"));
     return;
   }
 
