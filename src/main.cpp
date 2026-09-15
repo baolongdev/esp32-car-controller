@@ -32,7 +32,7 @@ bool bleAuthorized = false;
 uint16_t authorizedConnId = ESP_GATT_IF_NONE;
 
 // Trùng với giá trị mặc định của thanh tốc độ trong giao diện web.
-int motorSpeed = 100;
+int motorSpeed = 180;
 String commandLine;
 
 // Trạng thái chuyển động hiện tại: f / b / l / r / s.
