@@ -1798,12 +1798,20 @@
       if (isConnecting) return;
       if (!navigator.bluetooth) return alert('Trình duyệt chưa hỗ trợ Web Bluetooth. Hãy dùng Chrome/Edge trên Android hoặc HTTPS/localhost.');
       if (device?.gatt?.connected) { device.gatt.disconnect(); setRotationAvailability(false); setStatus('Chưa kết nối'); $('connectBtn').textContent = 'Kết nối thiết bị'; return; }
-      const password = window.prompt('Nhập mật khẩu kết nối thiết bị:');
-      if (password === null) return;
       isConnecting = true;
       $('connectBtn').disabled = true; $('connectBtn').textContent = 'Đang kết nối…'; $('dot').classList.add('is-connecting');
       try {
+        // requestDevice phải được gọi trực tiếp từ thao tác bấm nút.
+        // Không gọi prompt trước bước này vì sẽ làm mất user gesture.
         const selectedDevice = await navigator.bluetooth.requestDevice({ filters: [{ namePrefix: 'ESP32-MOTOR' }], optionalServices: [SERVICE] });
+        const password = window.prompt('Nhập mật khẩu kết nối thiết bị:');
+        if (password === null) {
+          isConnecting = false;
+          $('connectBtn').disabled = false;
+          $('connectBtn').textContent = 'Kết nối thiết bị';
+          $('dot').classList.remove('is-connecting');
+          return;
+        }
         if (device && disconnectHandler) device.removeEventListener('gattserverdisconnected', disconnectHandler);
         device = selectedDevice;
         disconnectHandler = () => { setRotationAvailability(false); setStatus('Mất kết nối với xe'); setSystemStatus('Mất kết nối với xe'); $('connectBtn').textContent = 'Kết nối lại'; rxChar = null; txChar = null; };
