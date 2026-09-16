@@ -3,26 +3,41 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <Adafruit_NeoPixel.h>
-#include <ESP32Servo.h>
 #include "device_config.h"
 
 constexpr uint32_t PWM_FREQUENCY = 20000;
 constexpr uint8_t PWM_RESOLUTION = 8;
 constexpr bool STARTUP_MOTOR_TEST = false;
 constexpr uint8_t DEBUG_LED_COUNT = 1;
+constexpr bool DETAILED_SERIAL_LOG = true;
+constexpr char FIRMWARE_VERSION[] = "motor-servo-ledc-v4";
+constexpr uint32_t SERVO_PWM_FREQUENCY = 50;
+// ESP32-S3 LEDC tối đa 14-bit; 16-bit khiến ledcAttachChannel() FAIL.
+constexpr uint8_t SERVO_PWM_RESOLUTION = 14;
+// Phân bổ cố định, không dùng LEDC_AUTO_CHANNEL:
+// channel 0..3 cho 4 ngõ motor, channel 4 cho servo.
+constexpr uint8_t MOTOR_PWM_CHANNEL_L1 = 0;
+constexpr uint8_t MOTOR_PWM_CHANNEL_L2 = 1;
+constexpr uint8_t MOTOR_PWM_CHANNEL_R1 = 2;
+constexpr uint8_t MOTOR_PWM_CHANNEL_R2 = 3;
+constexpr uint8_t SERVO_PWM_CHANNEL = 4;
+constexpr uint16_t SERVO_MIN_PULSE_US = 500;
+constexpr uint16_t SERVO_MAX_PULSE_US = 2400;
 
 // Gửi tối đa ~40 state/s. Các state cũ chưa gửi sẽ bị state mới ghi đè,
 // nhờ đó BLE TX không bị backlog khi web kéo slider/gửi lệnh liên tục.
 constexpr uint32_t BLE_NOTIFY_MIN_INTERVAL_MS = 25;
-constexpr bool VERBOSE_BLE_RX = true;
+constexpr bool VERBOSE_BLE_RX = false;
 
 Adafruit_NeoPixel debugLed(
     DEBUG_LED_COUNT,
     ACTIVE_DEVICE.debugLedPin,
     NEO_GRB + NEO_KHZ800);
-Servo steeringServo;
 int servoAngle = 0;
 bool servoReady = false;
+bool motorsReady = false;
+volatile int pendingServoAngle = -1;
+portMUX_TYPE servoCommandMux = portMUX_INITIALIZER_UNLOCKED;
 
 constexpr char BLE_SERVICE_UUID[] = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
 constexpr char BLE_RX_UUID[] = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";
@@ -36,7 +51,7 @@ bool bleAuthorized = false;
 uint16_t authorizedConnId = ESP_GATT_IF_NONE;
 
 // Trùng với giá trị mặc định của thanh tốc độ trong giao diện web.
-int motorSpeed = 180;
+int motorSpeed = 0;
 String commandLine;
 
 // Trạng thái chuyển động hiện tại: f / b / l / r / s.
@@ -104,12 +119,68 @@ void updateMotionLed(char command, int pwm) {
 // Motor
 // -----------------------------------------------------------------------------
 
+void stopMotors();
+
+void forceMotorPinsLow() {
+  pinMode(ACTIVE_DEVICE.leftIn1, OUTPUT);
+  pinMode(ACTIVE_DEVICE.leftIn2, OUTPUT);
+  pinMode(ACTIVE_DEVICE.rightIn1, OUTPUT);
+  pinMode(ACTIVE_DEVICE.rightIn2, OUTPUT);
+
+  digitalWrite(ACTIVE_DEVICE.leftIn1, LOW);
+  digitalWrite(ACTIVE_DEVICE.leftIn2, LOW);
+  digitalWrite(ACTIVE_DEVICE.rightIn1, LOW);
+  digitalWrite(ACTIVE_DEVICE.rightIn2, LOW);
+}
+
+bool initMotors() {
+  forceMotorPinsLow();
+
+  const uint8_t pins[] = {
+      ACTIVE_DEVICE.leftIn1,
+      ACTIVE_DEVICE.leftIn2,
+      ACTIVE_DEVICE.rightIn1,
+      ACTIVE_DEVICE.rightIn2};
+  const uint8_t channels[] = {
+      MOTOR_PWM_CHANNEL_L1,
+      MOTOR_PWM_CHANNEL_L2,
+      MOTOR_PWM_CHANNEL_R1,
+      MOTOR_PWM_CHANNEL_R2};
+
+  bool attached = true;
+  for (size_t i = 0; i < 4; ++i) {
+    const bool pinAttached = ledcAttachChannel(
+        pins[i], PWM_FREQUENCY, PWM_RESOLUTION, channels[i]);
+    attached = attached && pinAttached;
+    Serial.printf("Motor PWM GPIO%d channel=%d: %s\n",
+                  pins[i], channels[i],
+                  pinAttached ? "OK" : "FAIL");
+  }
+
+  motorsReady = attached;
+  if (motorsReady) {
+    stopMotors();
+  } else {
+    // Nếu LEDC attach lỗi, vẫn giữ driver ở trạng thái an toàn.
+    forceMotorPinsLow();
+  }
+
+  Serial.printf("Motor init: %s\n", motorsReady ? "OK" : "FAIL");
+  return motorsReady;
+}
+
 int applyMotorInvert(int speed, bool inverted) {
   return inverted ? -speed : speed;
 }
 
 void writeMotor(uint8_t in1, uint8_t in2, int speed) {
   speed = constrain(speed, -255, 255);
+
+  if (!motorsReady) {
+    digitalWrite(in1, LOW);
+    digitalWrite(in2, LOW);
+    return;
+  }
 
   if (speed > 0) {
     ledcWrite(in1, speed);
@@ -145,19 +216,85 @@ void moveBackward(int pwm) { setMotors(-pwm, -pwm); }
 void turnLeft(int pwm) { setMotors(-pwm, pwm); }
 void turnRight(int pwm) { setMotors(pwm, -pwm); }
 
-void setServoAngle(int angle) {
-  if (!servoReady) {
-    steeringServo.setPeriodHertz(50);
-    steeringServo.attach(ACTIVE_DEVICE.servoPin, 500, 2400);
-    servoReady = steeringServo.attached();
-    Serial.printf("Servo init GPIO%d: %s\n", ACTIVE_DEVICE.servoPin,
-                  servoReady ? "OK" : "FAIL");
+void setServoAngle(int angle);
+
+void initServo() {
+  if (servoReady) return;
+
+  servoReady = ledcAttachChannel(
+      ACTIVE_DEVICE.servoPin,
+      SERVO_PWM_FREQUENCY,
+      SERVO_PWM_RESOLUTION,
+      SERVO_PWM_CHANNEL);
+  Serial.printf("Servo init GPIO%d channel=%d: %s\n",
+                ACTIVE_DEVICE.servoPin, SERVO_PWM_CHANNEL,
+                servoReady ? "OK" : "FAIL");
+
+  if (servoReady) {
+    setServoAngle(0);
   }
+}
+
+void setServoAngle(int angle) {
+  if (!servoReady) initServo();
   if (!servoReady) return;
 
   servoAngle = constrain(angle, 0, 180);
-  steeringServo.write(servoAngle);
-  Serial.printf("Servo, goc=%d\n", servoAngle);
+  const uint32_t pulseUs = map(
+      servoAngle, 0, 180, SERVO_MIN_PULSE_US, SERVO_MAX_PULSE_US);
+  const uint32_t duty = (pulseUs * ((1UL << SERVO_PWM_RESOLUTION) - 1)) /
+                        (1000000UL / SERVO_PWM_FREQUENCY);
+  ledcWrite(ACTIVE_DEVICE.servoPin, duty);
+  Serial.printf("[SERVO %lu] angle=%d pulse=%luus duty=%lu\n",
+                millis(), servoAngle, pulseUs, duty);
+}
+
+void queueServoAngle(int angle) {
+  angle = constrain(angle, 0, 180);
+  portENTER_CRITICAL(&servoCommandMux);
+  pendingServoAngle = angle;
+  portEXIT_CRITICAL(&servoCommandMux);
+  if (DETAILED_SERIAL_LOG) {
+    Serial.printf("[SERVO QUEUE %lu] angle=%d\n", millis(), angle);
+  }
+}
+
+void processPendingServo() {
+  int angle = -1;
+  portENTER_CRITICAL(&servoCommandMux);
+  if (pendingServoAngle >= 0) {
+    angle = pendingServoAngle;
+    pendingServoAngle = -1;
+  }
+  portEXIT_CRITICAL(&servoCommandMux);
+
+  if (angle >= 0) {
+    if (DETAILED_SERIAL_LOG) {
+      Serial.printf("[SERVO PROCESS %lu] angle=%d\n", millis(), angle);
+    }
+    setServoAngle(angle);
+  }
+}
+
+void logMotion(char command, int pwm) {
+  if (!DETAILED_SERIAL_LOG) return;
+
+  int left = 0;
+  int right = 0;
+  switch (command) {
+    case 'f': left = pwm; right = pwm; break;
+    case 'b': left = -pwm; right = -pwm; break;
+    case 'l': left = -pwm; right = pwm; break;
+    case 'r': left = pwm; right = -pwm; break;
+    default: break;
+  }
+
+  const int appliedLeft = applyMotorInvert(left, ACTIVE_DEVICE.leftMotorInverted);
+  const int appliedRight = applyMotorInvert(right, ACTIVE_DEVICE.rightMotorInverted);
+  Serial.printf(
+      "[MOTOR %lu] cmd=%c pwm=%d left=%d right=%d ready=%s\n",
+      millis(), command, pwm, appliedLeft, appliedRight,
+      motorsReady ? "YES" : "NO");
 }
 
 void applyMotion(char command, int pwm) {
@@ -168,6 +305,7 @@ void applyMotion(char command, int pwm) {
     stopMotors();
     currentMotion = 's';
     updateMotionLed('s', 0);
+    logMotion('s', 0);
     return;
   }
 
@@ -181,6 +319,7 @@ void applyMotion(char command, int pwm) {
 
   currentMotion = command;
   updateMotionLed(command, pwm);
+  logMotion(command, pwm);
 }
 
 // -----------------------------------------------------------------------------
@@ -192,6 +331,9 @@ void sendBleAuthMessage(const char* message) {
   if (bleTx == nullptr) return;
   bleTx->setValue(message);
   bleTx->notify();
+  if (DETAILED_SERIAL_LOG) {
+    Serial.printf("[BLE TX %lu] auth=\"%s\"\n", millis(), message);
+  }
 }
 
 void queueBleMessage(const char* message) {
@@ -212,6 +354,11 @@ void flushBleMessage() {
 
   bleTx->setValue(pendingBleMessage);
   bleTx->notify();
+
+  if (DETAILED_SERIAL_LOG) {
+    Serial.printf("[BLE TX %lu] notify=\"%s\"\n",
+                  now, pendingBleMessage);
+  }
 
   lastBleNotifyAt = now;
   bleMessagePending = false;
@@ -327,12 +474,17 @@ void handleCommand(char command) {
 // BLE RX
 // -----------------------------------------------------------------------------
 
-void handleLine(String line, uint16_t connId = ESP_GATT_IF_NONE) {
+void handleLine(
+    String line,
+    uint16_t connId = ESP_GATT_IF_NONE,
+    bool fromSerial = false) {
   line.trim();
   if (line.length() == 0) return;
 
-  if (VERBOSE_BLE_RX) {
-    Serial.printf("[RX] %s\n", line.c_str());
+  if (VERBOSE_BLE_RX || DETAILED_SERIAL_LOG) {
+    Serial.printf("[RX %lu] source=%s conn=%u auth=%s data=\"%s\"\n",
+                  millis(), fromSerial ? "SERIAL" : "BLE", connId,
+                  bleAuthorized ? "YES" : "NO", line.c_str());
   }
 
   // AUTH vẫn xử lý ngay trong callback để web không timeout.
@@ -365,10 +517,11 @@ void handleLine(String line, uint16_t connId = ESP_GATT_IF_NONE) {
     return;
   }
 
-  if (!bleAuthorized ||
+  if (!fromSerial &&
+      (!bleAuthorized ||
       (connId != ESP_GATT_IF_NONE &&
        authorizedConnId != ESP_GATT_IF_NONE &&
-       connId != authorizedConnId)) {
+       connId != authorizedConnId))) {
     sendBleAuthMessage("AUTH REQUIRED");
     return;
   }
@@ -377,9 +530,10 @@ void handleLine(String line, uint16_t connId = ESP_GATT_IF_NONE) {
       tolower(static_cast<unsigned char>(line[0])));
 
   if (command == 'v' && line.length() > 1) {
-    setServoAngle(line.substring(1).toInt());
+    const int angle = constrain(line.substring(1).toInt(), 0, 180);
+    queueServoAngle(angle);
     char response[32];
-    snprintf(response, sizeof(response), "SERVO=%d", servoAngle);
+    snprintf(response, sizeof(response), "SERVO=%d", angle);
     queueBleMessage(response);
     return;
   }
@@ -391,7 +545,10 @@ void handleLine(String line, uint16_t connId = ESP_GATT_IF_NONE) {
 
     // Motor đổi NGAY khi RX đến. Không chờ notify và không chờ loop timer.
     applyMotion(command, motorSpeed);
-    Serial.printf("Lenh %c, PWM=%d\n", command, motorSpeed);
+    if (DETAILED_SERIAL_LOG) {
+      Serial.printf("[COMMAND %lu] motor=%c requested_pwm=%d\n",
+                    millis(), command, motorSpeed);
+    }
 
     // TX chỉ giữ state mới nhất, tránh backlog khi slider gửi dày.
     queueMotionState(currentMotion, motorSpeed);
@@ -401,7 +558,9 @@ void handleLine(String line, uint16_t connId = ESP_GATT_IF_NONE) {
   if (command == 's') {
     applyMotion('s', 0);
     queueMotionState('s', 0);
-    Serial.println(F("Dung 2 motor"));
+    if (DETAILED_SERIAL_LOG) {
+      Serial.printf("[COMMAND %lu] stop requested\n", millis());
+    }
     return;
   }
 
@@ -530,7 +689,12 @@ void setupBle() {
 
 void setup() {
   Serial.begin(115200);
+
+  // Đưa các ngõ vào DRV8833 về LOW ngay khi MCU bắt đầu chạy.
+  // Không chờ BLE/servo để tránh bánh xe giật hoặc quay lúc khởi động.
+  forceMotorPinsLow();
   delay(300);
+  Serial.printf("Firmware: %s\n", FIRMWARE_VERSION);
 
   if (ACTIVE_DEVICE.debugLedPin >= 0) {
     debugLed.begin();
@@ -539,22 +703,20 @@ void setup() {
     debugLed.show();
   }
 
-  for (uint8_t pin : {
-           ACTIVE_DEVICE.leftIn1,
-           ACTIVE_DEVICE.leftIn2,
-           ACTIVE_DEVICE.rightIn1,
-           ACTIVE_DEVICE.rightIn2}) {
-    pinMode(pin, OUTPUT);
-    digitalWrite(pin, LOW);
-    ledcAttach(pin, PWM_FREQUENCY, PWM_RESOLUTION);
-  }
+  // Motor luôn khởi động ở PWM=0 trước khi có BLE command.
+  initMotors();
 
-  stopMotors();
+  // Advertising BLE trước servo: nếu servo có lỗi, BLE vẫn phải scan/connect.
+  Serial.println(F(">>> Starting BLE"));
+  setupBle();
+  Serial.println(F(">>> BLE started"));
+
+  // Servo dùng LEDC trực tiếp trên channel riêng, không gọi ESP32Servo.attach().
+  // Việc này không chặn BLE và đặt góc ban đầu về 0 độ.
+  initServo();
 
   Serial.println(F("ESP32-S3 + DRV8833 differential drive ready"));
   printHelp();
-
-  setupBle();
 
   if (STARTUP_MOTOR_TEST) {
     runTestFor(10000);
@@ -562,6 +724,8 @@ void setup() {
 }
 
 void loop() {
+  processPendingServo();
+
   // BLE TX được flush ngoài callback để callback RX luôn ngắn và motor phản hồi nhanh.
   flushBleMessage();
 
@@ -569,7 +733,8 @@ void loop() {
     const char received = static_cast<char>(Serial.read());
 
     if (received == '\r' || received == '\n') {
-      handleLine(commandLine);
+      // USB Serial dùng để debug/test trực tiếp, không cần BLE AUTH.
+      handleLine(commandLine, ESP_GATT_IF_NONE, true);
       commandLine = "";
     } else if (commandLine.length() < 15) {
       commandLine += received;

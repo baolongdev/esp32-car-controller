@@ -345,6 +345,43 @@
       font-size: var(--font-small);
     }
 
+    .speed-presets {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+      margin-top: 9px;
+    }
+
+    .speed-preset {
+      min-width: 0;
+      min-height: 40px;
+      padding: 7px 8px;
+      border: 1px solid #46545e;
+      background: linear-gradient(145deg, #26323b, #141c22);
+      color: var(--text);
+      font: 700 13px/1 Inter, system-ui, sans-serif;
+      white-space: nowrap;
+      touch-action: manipulation;
+    }
+
+    .speed-preset:not(:disabled):hover,
+    .speed-preset:not(:disabled):focus-visible {
+      border-color: var(--accent-light);
+    }
+
+    .speed-preset[aria-pressed="true"] {
+      border-color: var(--accent-light);
+      background: var(--accent);
+      color: #11161a;
+      box-shadow: 0 0 10px #f5b92845, inset 0 2px 4px #fff3;
+    }
+
+    .speed-preset:disabled {
+      opacity: .78;
+      filter: none;
+      cursor: not-allowed;
+    }
+
     .control-card {
       padding: 16px 17px 18px;
     }
@@ -532,8 +569,8 @@
 
     .rotation-button:disabled {
       cursor: not-allowed;
-      opacity: .42;
-      filter: grayscale(.5);
+      opacity: .82;
+      filter: none;
     }
 
     .emergency {
@@ -1416,6 +1453,30 @@
         grid-column: auto;
         grid-row: auto;
         margin: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(150px, .72fr);
+        grid-template-rows: auto auto;
+        align-items: center;
+        column-gap: 12px;
+        row-gap: 4px;
+        min-height: 104px;
+      }
+
+      main>.speed-card .speed-line {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      main>.speed-card .speed-presets {
+        grid-column: 1;
+        grid-row: 2;
+        margin-top: 0;
+      }
+
+      main>.speed-card .servo-control {
+        grid-column: 2;
+        grid-row: 1 / -1;
+        margin-top: 0;
       }
 
       main>.control-layout {
@@ -1539,8 +1600,8 @@
       }
 
       .speed-card {
-        height: clamp(70px, 18vh, 86px);
-        min-height: 70px;
+        height: auto;
+        min-height: 96px;
         padding: 6px 10px;
         justify-content: center;
       }
@@ -1559,7 +1620,17 @@
 
       .speed-card .speed-technical {
         margin-top: 2px;
-        font-size: 10px;
+        font-size: 11px;
+      }
+
+      .speed-card .speed-presets {
+        gap: 5px;
+      }
+
+      .speed-card .speed-preset {
+        min-height: 36px;
+        padding-inline: 5px;
+        font-size: 12px;
       }
 
       .speed-card input[type=range] {
@@ -1738,6 +1809,535 @@
         max-height: 78px;
       }
     }
+
+    /* Cân bằng các panel điều khiển trong landscape */
+    @media (orientation: landscape) {
+      .control-layout > .linear-panel,
+      .control-layout > .pivot-panel {
+        grid-template-rows: auto 24px minmax(0, 1fr) auto;
+        min-height: 0;
+      }
+
+      .linear-panel .linear-spacer,
+      .pivot-panel .rotation-description {
+        display: flex;
+        align-items: flex-start;
+        min-height: 24px;
+        margin: 0;
+      }
+
+      .linear-panel .linear-controls,
+      .pivot-panel .rotation-controls {
+        align-self: stretch;
+        align-items: stretch;
+        justify-content: stretch;
+        min-height: 0;
+        margin-block: 4px;
+      }
+
+      .linear-panel .linear-controls .pad-item,
+      .pivot-panel .rotation-controls .pad-item {
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) auto;
+        align-items: stretch;
+        min-width: 0;
+        min-height: 0;
+        gap: 5px;
+      }
+
+      .linear-panel .linear-controls button,
+      .pivot-panel .rotation-controls button {
+        width: 100%;
+        height: auto;
+        min-height: 52px;
+        align-self: stretch;
+      }
+
+      .linear-panel .control-label,
+      .pivot-panel .control-label {
+        min-height: 16px;
+        text-align: center;
+        white-space: nowrap;
+      }
+
+      .control-layout > .linear-panel .panel-footer,
+      .control-layout > .pivot-panel .panel-footer {
+        min-height: 42px;
+        justify-content: flex-end;
+      }
+
+      main > .speed-card {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(150px, .8fr);
+        grid-template-rows: auto auto;
+        min-height: 104px;
+        column-gap: 10px;
+        row-gap: 4px;
+      }
+
+      main > .speed-card .speed-line {
+        grid-column: 1 / 3;
+        grid-row: 1;
+      }
+
+      main > .speed-card .speed-presets {
+        grid-column: 1 / 3;
+        grid-row: 2;
+        margin-top: 0;
+      }
+
+      main > .speed-card .servo-control {
+        grid-column: 3;
+        grid-row: 1 / 3;
+        margin-top: 0;
+        align-self: stretch;
+        justify-content: center;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 430px) {
+      .control-layout > .linear-panel,
+      .control-layout > .pivot-panel {
+        grid-template-rows: auto 20px minmax(0, 1fr) auto;
+      }
+
+      .linear-panel .linear-spacer,
+      .pivot-panel .rotation-description {
+        min-height: 20px;
+      }
+
+      .linear-panel .linear-controls,
+      .pivot-panel .rotation-controls {
+        margin-block: 2px;
+      }
+
+      .linear-panel .linear-controls button,
+      .pivot-panel .rotation-controls button {
+        min-height: 44px;
+      }
+
+      .control-layout > .linear-panel .panel-footer,
+      .control-layout > .pivot-panel .panel-footer {
+        min-height: 36px;
+      }
+
+      main > .speed-card {
+        min-height: 96px;
+        padding-block: 6px;
+      }
+    }
+
+    /* Landscape: nút co giãn kín toàn bộ chiều rộng + chiều cao panel */
+    @media (orientation: landscape) {
+      .linear-panel .linear-controls,
+      .pivot-panel .rotation-controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: minmax(0, 1fr);
+        align-items: stretch;
+        justify-content: stretch;
+        align-content: stretch;
+        height: 100%;
+      }
+
+      .linear-panel .linear-controls .pad-item,
+      .pivot-panel .rotation-controls .pad-item {
+        position: relative;
+        display: grid;
+        grid-template-rows: minmax(0, 1fr);
+        height: 100%;
+        width: 100%;
+        min-width: 0;
+        align-self: stretch;
+        justify-self: stretch;
+        min-height: 0;
+        gap: 0;
+      }
+
+      .linear-panel .linear-controls .pad-item button,
+      .pivot-panel .rotation-controls .pad-item button {
+        display: grid;
+        place-items: center;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        max-height: none;
+        align-self: stretch;
+        justify-self: stretch;
+        font-size: clamp(28px, 4.5vh, 44px);
+      }
+
+      .linear-panel .linear-controls .pad-item .control-label,
+      .pivot-panel .rotation-controls .pad-item .control-label {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 6px;
+        pointer-events: none;
+        z-index: 1;
+        font-size: clamp(11px, 1.6vh, 14px);
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 430px) {
+      .linear-panel .linear-controls,
+      .pivot-panel .rotation-controls {
+        margin-block: 2px;
+      }
+
+      .linear-panel .linear-controls .pad-item button,
+      .pivot-panel .rotation-controls .pad-item button {
+        min-height: 40px;
+        font-size: clamp(24px, 6vh, 32px);
+      }
+    }
+
+    /* Portrait: nút lớn, giãn theo chiều cao màn hình */
+    @media (orientation: portrait) {
+      .linear-panel .linear-controls,
+      .pivot-panel .rotation-controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: minmax(0, 1fr);
+        align-items: stretch;
+        justify-content: stretch;
+        align-content: stretch;
+        height: 100%;
+      }
+
+      .linear-panel .linear-controls .pad-item,
+      .pivot-panel .rotation-controls .pad-item {
+        position: relative;
+        display: grid;
+        grid-template-rows: minmax(0, 1fr);
+        height: 100%;
+        width: 100%;
+        min-width: 0;
+        align-self: stretch;
+        justify-self: stretch;
+        min-height: 0;
+        gap: 0;
+      }
+
+      .linear-panel .linear-controls .pad-item button,
+      .pivot-panel .rotation-controls .pad-item button {
+        display: grid;
+        place-items: center;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        max-height: none;
+        align-self: stretch;
+        justify-self: stretch;
+        font-size: clamp(32px, 7vw, 46px);
+      }
+
+      .linear-panel .linear-controls .pad-item .control-label,
+      .pivot-panel .rotation-controls .pad-item .control-label {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 6px;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .control-layout > .linear-panel,
+      .control-layout > .pivot-panel {
+        min-height: clamp(240px, 34vh, 320px);
+      }
+
+      .linear-spacer {
+        display: none;
+      }
+    }
+
+    /* FIX: rotation buttons full width + landscape giữ 2 cột */
+    .rotation-controls {
+      width: 100%;
+      max-width: none;
+    }
+
+    .rotation-controls .pad-item {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .rotation-button,
+    .linear-button {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    @media (orientation: landscape) {
+      .pivot-panel .rotation-controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: 1fr;
+        gap: 8px;
+      }
+    }
+
+    /* =========================================================
+       FINAL FIX - 2 CỘT × 1 DÒNG + BUTTON FULL WIDTH
+       ========================================================= */
+
+    @media (orientation: landscape) {
+      .linear-panel .linear-controls,
+      .pivot-panel .rotation-controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: minmax(0, 1fr);
+        width: 100%;
+        height: 100%;
+        min-width: 0;
+        min-height: 0;
+        gap: 8px;
+        align-items: stretch;
+        justify-items: stretch;
+        align-content: stretch;
+      }
+
+      .linear-panel .linear-controls > .pad-item,
+      .pivot-panel .rotation-controls > .pad-item {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 100%;
+        min-width: 0;
+        min-height: 0;
+        align-self: stretch;
+        justify-self: stretch;
+        margin: 0;
+        padding: 0;
+      }
+
+      .linear-panel .linear-controls > .pad-item > button,
+      .pivot-panel .rotation-controls > .pad-item > button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        height: 100% !important;
+        min-height: 60px;
+        max-height: none !important;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        border-radius: 2px;
+        clip-path: polygon(0 6px, 6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%);
+        background: linear-gradient(145deg, #26323b, #141c22);
+        border: 1px solid #46545e;
+        font-size: clamp(28px, 5vh, 40px);
+        align-self: stretch;
+        justify-self: stretch;
+        box-shadow: inset 0 1px #ffffff14, inset 0 -4px 8px #0005, 0 3px 8px #0005;
+        transition: background-color 140ms ease, color 140ms ease,
+                    border-color 140ms ease, box-shadow 140ms ease, transform 80ms ease;
+      }
+
+      .linear-panel .linear-controls > .pad-item > button > .control-label,
+      .pivot-panel .rotation-controls > .pad-item > button > .control-label {
+        position: static;
+        display: block;
+        pointer-events: none;
+        color: inherit;
+        font-size: clamp(12px, 1.8vh, 15px);
+        font-weight: 700;
+        line-height: 1.1;
+        text-align: center;
+        white-space: nowrap;
+      }
+    }
+
+    /* Bên Xoay giống hệt bên Di chuyển: ẩn dòng mô tả */
+    .linear-panel .linear-spacer,
+    .pivot-panel .rotation-description {
+      display: none;
+    }
+
+    /* Khi bấm/giữ, đổi màu vàng cho 4 nút điều khiển */
+    .linear-panel .linear-controls > .pad-item > button:active,
+    .linear-panel .linear-controls > .pad-item > button.active,
+    .pivot-panel .rotation-controls > .pad-item > button:active,
+    .pivot-panel .rotation-controls > .pad-item > button.active {
+      background: linear-gradient(145deg, #ffdd6b, #f5b928) !important;
+      color: #171205 !important;
+      border-color: #ffe08a !important;
+      box-shadow: 0 0 16px #f5b92859, inset 0 1px #ffffff38 !important;
+      transform: scale(.95);
+    }
+
+    .linear-panel .linear-controls > .pad-item > button.active > .control-label,
+    .pivot-panel .rotation-controls > .pad-item > button.active > .control-label {
+      color: #171205;
+    }
+
+    /* Nhãn trong button luôn theo màu icon, không tách rời */
+    .linear-panel .linear-controls > .pad-item > button > .control-label,
+    .pivot-panel .rotation-controls > .pad-item > button > .control-label {
+      position: static !important;
+      color: inherit !important;
+      background: transparent !important;
+    }
+
+    /* 4 nút khi chưa kết nối: vẫn rõ ràng nhưng không khả dụng */
+    .linear-panel .linear-controls > .pad-item > button:disabled,
+    .pivot-panel .rotation-controls > .pad-item > button:disabled {
+      cursor: not-allowed;
+      opacity: .82;
+      filter: none;
+      color: #d7dee1;
+      background: linear-gradient(145deg, #222d35, #151d23);
+      border-color: #3f4d56;
+      box-shadow:
+        inset 0 1px rgba(255,255,255,.05),
+        inset 0 -3px 7px rgba(0,0,0,.35);
+      transform: none;
+      -webkit-text-fill-color: currentColor;
+    }
+
+    .linear-panel .linear-controls > .pad-item > button:disabled .control-label,
+    .pivot-panel .rotation-controls > .pad-item > button:disabled .control-label {
+      opacity: 1;
+      color: inherit;
+    }
+
+    /* 4 nút hover: cùng viền vàng + glow */
+    .linear-panel .linear-controls > .pad-item > button:hover:not(:disabled),
+    .linear-panel .linear-controls > .pad-item > button:focus-visible,
+    .pivot-panel .rotation-controls > .pad-item > button:hover:not(:disabled),
+    .pivot-panel .rotation-controls > .pad-item > button:focus-visible {
+      border-color: var(--accent);
+      box-shadow: 0 0 10px #f5b92835, inset 0 1px #ffffff14;
+    }
+
+    /* =========================================================
+       FINAL: thu gọn speed-card trong landscape để dành chỗ cho
+       linear-panel + pivot-panel (4 nút điều khiển)
+       ========================================================= */
+    @media (orientation: landscape) {
+      main > .speed-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(135px, .32fr);
+        grid-template-rows: auto auto;
+        column-gap: 12px;
+        row-gap: 2px;
+        width: 100%;
+        height: 74px;
+        min-height: 0;
+        margin: 0;
+        padding: 5px 10px;
+        flex: 0 0 74px;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      main > .speed-card .speed-line {
+        grid-column: 1;
+        grid-row: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 0;
+      }
+
+      main > .speed-card .section-label {
+        margin: 0;
+        font-size: 11px;
+        line-height: 1;
+      }
+
+      main > .speed-card .speed-value {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 23px;
+        line-height: 1;
+      }
+
+      main > .speed-card .speed-technical {
+        display: inline;
+        margin: 0;
+        font-size: 9px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      main > .speed-card .speed-presets {
+        grid-column: 1;
+        grid-row: 2;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 5px;
+        margin: 0;
+      }
+
+      main > .speed-card .speed-preset {
+        min-height: 0;
+        height: 28px;
+        padding: 2px 6px;
+        font-size: 10px;
+        line-height: 1;
+      }
+
+      main > .speed-card .servo-control {
+        grid-column: 2;
+        grid-row: 1 / 3;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 4px;
+        margin: 0;
+        min-width: 0;
+        align-self: stretch;
+      }
+
+      main > .speed-card .servo-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 5px;
+        min-width: 0;
+      }
+
+      main > .speed-card .servo-heading strong {
+        font-size: 10px;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      main > .speed-card .servo-toggle {
+        width: 100%;
+        height: 28px;
+        min-height: 0;
+        padding: 2px 8px;
+        font-size: 10px;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 430px) {
+      main > .speed-card {
+        height: 62px;
+        min-height: 0;
+        flex-basis: 62px;
+        padding: 4px 8px;
+      }
+
+      main > .speed-card .speed-value {
+        font-size: 20px;
+      }
+
+      main > .speed-card .speed-preset,
+      main > .speed-card .servo-toggle {
+        height: 25px;
+        min-height: 0;
+        font-size: 9px;
+      }
+    }
   </style>
 </head>
 
@@ -1769,14 +2369,16 @@
     <section class="card panel speed-card">
       <div class="speed-line">
         <div class="section-label">Tốc độ</div>
-        <div class="speed-value"><span id="speedPercent">71%</span><span class="speed-technical">PWM: <span
-              id="speedValue">180</span>/255</span></div>
+        <div class="speed-value"><span id="speedPercent">0%</span></div>
       </div>
-      <input id="speed" type="range" min="0" max="255" value="180" />
-      <div class="range-labels"><span>Chậm</span><span>Nhanh</span></div>
+      <div class="speed-presets" role="group" aria-label="Chọn tốc độ">
+        <button class="speed-preset" type="button" data-pwm="191" aria-pressed="false">SLOW</button>
+        <button class="speed-preset" type="button" data-pwm="217" aria-pressed="false">MEDIUM</button>
+        <button class="speed-preset" type="button" data-pwm="255" aria-pressed="false">HIGH</button>
+      </div>
       <div class="servo-control">
-        <div class="servo-heading"><span class="section-label">Góc servo</span><strong id="servoAngle">0°</strong></div>
-        <button id="servoToggle" class="servo-toggle" type="button" disabled>Đổi sang 150°</button>
+        <div class="servo-heading"><span class="section-label">Servo</span><strong id="servoAngle">Đóng · 0°</strong></div>
+        <button id="servoToggle" class="servo-toggle" type="button" disabled>Mở</button>
       </div>
     </section>
 
@@ -1785,10 +2387,10 @@
         <div class="section-label">Điều khiển di chuyển</div>
         <div class="rotation-description linear-spacer" aria-hidden="true"></div>
         <div class="linear-controls">
-          <div class="pad-item"><button data-command="f" aria-label="Tiến">↑</button><span
-              class="control-label">Tiến</span></div>
-          <div class="pad-item"><button data-command="b" aria-label="Lùi">↓</button><span
-              class="control-label">Lùi</span></div>
+          <div class="pad-item"><button class="linear-button" data-command="f" aria-label="Tiến">↑<span
+                class="control-label">Tiến</span></button></div>
+          <div class="pad-item"><button class="linear-button" data-command="b" aria-label="Lùi">↓<span
+                class="control-label">Lùi</span></button></div>
         </div>
         <div class="panel-footer">
           <div class="drive-status" id="driveStatus" aria-live="polite">Xe đang dừng</div>
@@ -1800,10 +2402,14 @@
         <div class="section-label">Xoay tại chỗ</div>
         <div class="rotation-description">Hai bánh quay ngược chiều</div>
         <div class="rotation-controls">
-          <div class="pad-item"><button id="turnLeftBtn" data-command="l" aria-label="Xoay trái tại chỗ"
-              title="Xoay trái tại chỗ">↺</button><span class="control-label">Xoay trái</span></div>
-          <div class="pad-item"><button id="turnRightBtn" data-command="r" aria-label="Xoay phải tại chỗ"
-              title="Xoay phải tại chỗ">↻</button><span class="control-label">Xoay phải</span></div>
+          <div class="pad-item">
+            <button id="turnLeftBtn" class="rotation-button" data-command="l"
+              aria-label="Xoay trái tại chỗ" title="Xoay trái tại chỗ">↺<span class="control-label">Xoay trái</span></button>
+          </div>
+          <div class="pad-item">
+            <button id="turnRightBtn" class="rotation-button" data-command="r"
+              aria-label="Xoay phải tại chỗ" title="Xoay phải tại chỗ">↻<span class="control-label">Xoay phải</span></button>
+          </div>
         </div>
         <div class="panel-footer">
           <div class="drive-status pivot-status" aria-live="polite">Giữ nút để xoay</div>
@@ -1820,16 +2426,21 @@
     const RX = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
     const TX = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
     let device, rxChar, txChar;
-    let bleWriteQueue = Promise.resolve();
+    let bleWriteRunning = false;
+    let pendingMotionPayload = null;
+    const pendingOtherPayloads = [];
+    const bleEncoder = new TextEncoder();
     let isConnecting = false;
     let disconnectHandler = null;
     const $ = id => document.getElementById(id);
     const rotationButtons = [$('turnLeftBtn'), $('turnRightBtn')];
     const servoToggle = $('servoToggle');
+    const speedPresets = [...document.querySelectorAll('.speed-preset')];
     function setRotationAvailability(enabled) {
       rotationButtons.forEach(button => { button.disabled = !enabled; });
       document.querySelectorAll('[data-command]').forEach(button => { button.disabled = !enabled; });
       servoToggle.disabled = !enabled;
+      speedPresets.forEach(button => { button.disabled = !enabled; });
     }
     setRotationAvailability(false);
     function setSystemStatus(text) { $('systemStatus').textContent = text; }
@@ -1884,8 +2495,10 @@
         // requestDevice phải được gọi trực tiếp từ thao tác bấm nút.
         // Không gọi prompt trước bước này vì sẽ làm mất user gesture.
         const selectedDevice = await navigator.bluetooth.requestDevice({
-          // Chỉ hiện đúng thiết bị điều khiển xe: phải khớp cả tên và service.
-          filters: [{ namePrefix: 'ESP32-MOTOR', services: [SERVICE] }],
+          // Lọc theo tên; service vẫn được kiểm tra sau khi kết nối qua
+          // getPrimaryService(SERVICE). Cách này tránh phụ thuộc việc UUID
+          // 128-bit nằm trong advertising packet hay scan response.
+          filters: [{ namePrefix: 'ESP32-MOTOR' }],
           optionalServices: [SERVICE]
         });
         const password = window.prompt('Nhập mật khẩu kết nối thiết bị:');
@@ -1898,12 +2511,16 @@
         }
         if (device && disconnectHandler) device.removeEventListener('gattserverdisconnected', disconnectHandler);
         device = selectedDevice;
-        disconnectHandler = () => { setRotationAvailability(false); setStatus('Mất kết nối với xe'); setSystemStatus('Mất kết nối với xe'); $('connectBtn').textContent = 'Kết nối lại'; rxChar = null; txChar = null; };
+        disconnectHandler = () => { pendingMotionPayload = null; pendingOtherPayloads.length = 0; setRotationAvailability(false); setStatus('Mất kết nối với xe'); setSystemStatus('Mất kết nối với xe'); $('connectBtn').textContent = 'Kết nối lại'; rxChar = null; txChar = null; };
         device.addEventListener('gattserverdisconnected', disconnectHandler);
         const characteristics = await connectGattWithRetry(device);
         rxChar = characteristics.rx;
         txChar = characteristics.tx;
-        txChar.addEventListener('characteristicvaluechanged', e => { $('lastCommand').textContent = new TextDecoder().decode(e.target.value); });
+        txChar.addEventListener('characteristicvaluechanged', e => {
+          const message = new TextDecoder().decode(e.target.value).trim();
+          console.log('[BLE RX]', performance.now().toFixed(1), message);
+          $('lastCommand').textContent = message;
+        });
         await authenticateBle(password);
         $('deviceName').textContent = device.name || 'ESP32-MOTOR'; $('dot').classList.remove('is-connecting'); setRotationAvailability(true); setStatus('Đã kết nối', true); $('connectBtn').textContent = 'Ngắt kết nối';
       } catch (e) { $('dot').classList.remove('is-connecting'); setRotationAvailability(false); rxChar = null; txChar = null; setStatus('Chưa kết nối'); setSystemStatus('Không thể kết nối. Hãy bật Bluetooth và thử lại.'); $('connectBtn').textContent = 'Kết nối thiết bị'; if (e.name !== 'NotFoundError') alert('Không kết nối được BLE: ' + e.message); }
@@ -1929,20 +2546,65 @@
         setSystemStatus('Xe đang dừng');
       }
     }
-    async function send(command) {
+    async function pumpBleWrites() {
+      if (bleWriteRunning) return;
+      if (!rxChar || !device?.gatt?.connected) return;
+      bleWriteRunning = true;
+
+      try {
+        while (device?.gatt?.connected) {
+          let payload = null;
+
+          // Motor/STOP luôn được ưu tiên và chỉ giữ trạng thái mới nhất.
+          if (pendingMotionPayload !== null) {
+            payload = pendingMotionPayload;
+            pendingMotionPayload = null;
+          } else if (pendingOtherPayloads.length > 0) {
+            payload = pendingOtherPayloads.shift();
+          } else {
+            break;
+          }
+
+          if (!rxChar || !device?.gatt?.connected) break;
+          // Motor cần phản hồi realtime: không chờ ACK của từng gói.
+          const bytes = bleEncoder.encode(payload);
+          if (rxChar.writeValueWithoutResponse) {
+            await rxChar.writeValueWithoutResponse(bytes);
+          } else {
+            await rxChar.writeValue(bytes);
+          }
+          console.log('[BLE TX SENT]', performance.now().toFixed(1), payload);
+          $('lastCommand').textContent = payload;
+        }
+      } catch (e) {
+        pendingMotionPayload = null;
+        pendingOtherPayloads.length = 0;
+        setStatus('Mất kết nối với xe');
+        setSystemStatus('Không thể gửi lệnh điều khiển');
+      } finally {
+        bleWriteRunning = false;
+        if (pendingMotionPayload !== null || pendingOtherPayloads.length > 0) {
+          queueMicrotask(pumpBleWrites);
+        }
+      }
+    }
+
+    function send(command) {
       if (!rxChar || !device?.gatt?.connected) { setStatus('Chưa kết nối'); return; }
-      const speed = $('speed').value; const payload = 'fblr'.includes(command) ? command + speed : command;
+      const speed = currentPwm; const payload = 'fblr'.includes(command) ? command + speed : command;
       // Cập nhật giao diện ngay khi phát lệnh, không chờ BLE write hoàn tất.
       updateCommandUi(command, speed);
-      const characteristic = rxChar;
-      const write = async () => {
-        if (characteristic !== rxChar || !device?.gatt?.connected) throw new Error('BLE disconnected');
-        await characteristic.writeValue(new TextEncoder().encode(payload));
-        $('lastCommand').textContent = payload;
-      };
-      const pendingWrite = bleWriteQueue.then(write, write);
-      bleWriteQueue = pendingWrite.catch(() => {});
-      try { await pendingWrite; } catch (e) { setStatus('Mất kết nối với xe'); setSystemStatus('Không thể gửi lệnh điều khiển'); }
+
+      // Lệnh chuyển động/STOP là trạng thái, không phải transaction FIFO:
+      // nếu người dùng đổi hướng nhanh, bỏ các lệnh cũ đang chờ để tránh trễ.
+      if (['f', 'b', 'l', 'r', 's'].includes(command)) {
+        pendingMotionPayload = payload;
+      } else {
+        // Servo hoặc command phụ dùng chung pump, nằm sau motor.
+        pendingOtherPayloads.push(payload);
+      }
+      console.log('[BLE TX QUEUE]', performance.now().toFixed(1), payload);
+      pumpBleWrites();
     }
     $('connectBtn').addEventListener('click', connectBle);
     $('fullscreenBtn').addEventListener('click', async () => {
@@ -1966,13 +2628,22 @@
       $('fullscreenBtn').setAttribute('aria-label', isFullscreen ? 'Thoát toàn màn hình' : 'Bật toàn màn hình');
       $('fullscreenBtn').title = isFullscreen ? 'Thoát toàn màn hình' : 'Bật toàn màn hình';
     });
-    $('speed').addEventListener('input', e => { const pwm = e.target.value; const percent = Math.round(pwm / 255 * 100); $('speedValue').textContent = pwm; $('speedPercent').textContent = percent + '%'; e.target.style.setProperty('--progress', percent + '%'); });
-    $('speed').dispatchEvent(new Event('input'));
+    let currentPwm = 0;
+    function setPwm(value) {
+      currentPwm = Math.max(0, Math.min(255, Number(value) || 0));
+      const percent = Math.round(currentPwm / 255 * 100);
+      $('speedPercent').textContent = percent + '%';
+      speedPresets.forEach(button => {
+        button.setAttribute('aria-pressed', String(Number(button.dataset.pwm) === currentPwm));
+      });
+    }
+    speedPresets.forEach(button => button.addEventListener('click', () => setPwm(button.dataset.pwm)));
+    setPwm(currentPwm);
     let servoAngle = 0;
     servoToggle.addEventListener('click', () => {
       servoAngle = servoAngle === 0 ? 150 : 0;
-      $('servoAngle').textContent = servoAngle + '°';
-      servoToggle.textContent = servoAngle === 0 ? 'Đổi sang 150°' : 'Đổi về 0°';
+      $('servoAngle').textContent = servoAngle === 0 ? 'Đóng · 0°' : 'Mở · 150°';
+      servoToggle.textContent = servoAngle === 0 ? 'Mở' : 'Đóng';
       send('v' + servoAngle);
     });
     const motionButtons = [...document.querySelectorAll('[data-command]')].filter(btn => ['f', 'b', 'l', 'r'].includes(btn.dataset.command));
@@ -1983,10 +2654,25 @@
       activePointerIds.delete(btn);
       send('s');
     }
+    function deactivateMotionButton(btn) {
+      if (!btn.classList.contains('active')) return;
+      btn.classList.remove('active');
+      activePointerIds.delete(btn);
+    }
+    function stopAllMotion() {
+      let wasMoving = false;
+      motionButtons.forEach(btn => {
+        if (btn.classList.contains('active')) wasMoving = true;
+        deactivateMotionButton(btn);
+      });
+      if (wasMoving) send('s');
+    }
     motionButtons.forEach(btn => {
       btn.addEventListener('pointerdown', e => {
+        if (btn.disabled) return;
         e.preventDefault();
-        motionButtons.forEach(other => { if (other !== btn) releaseMotionButton(other); });
+        // Đổi hướng là một trạng thái mới, không cần gửi STOP trung gian.
+        motionButtons.forEach(other => { if (other !== btn) deactivateMotionButton(other); });
         activePointerIds.set(btn, e.pointerId);
         if (btn.setPointerCapture) btn.setPointerCapture(e.pointerId);
         btn.classList.add('active');
@@ -1998,13 +2684,16 @@
       btn.addEventListener('pointercancel', e => {
         if (activePointerIds.get(btn) === e.pointerId) releaseMotionButton(btn);
       });
+      btn.addEventListener('lostpointercapture', () => {
+        // Một số mobile browser mất pointerup khi pointer capture bị hủy.
+        if (btn.classList.contains('active')) stopAllMotion();
+      });
     });
-    window.addEventListener('pointerup', e => motionButtons.forEach(btn => {
-      if (activePointerIds.get(btn) === e.pointerId) releaseMotionButton(btn);
-    }));
-    window.addEventListener('blur', () => motionButtons.forEach(releaseMotionButton));
+    window.addEventListener('pointerup', stopAllMotion);
+    window.addEventListener('pointercancel', stopAllMotion);
+    window.addEventListener('blur', stopAllMotion);
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) motionButtons.forEach(releaseMotionButton);
+      if (document.hidden) stopAllMotion();
     });
     $('emergency').addEventListener('click', () => send('s'));
 
@@ -2035,7 +2724,7 @@
       const button = motionButtons.find(btn => btn.dataset.command === command);
       if (!button) return;
       e.preventDefault();
-      motionButtons.forEach(other => { if (other !== button) releaseMotionButton(other); });
+      motionButtons.forEach(other => { if (other !== button) deactivateMotionButton(other); });
       keyboardButton = button;
       keyboardKey = key;
       button.classList.add('active');
