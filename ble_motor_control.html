@@ -2640,12 +2640,13 @@
     speedPresets.forEach(button => button.addEventListener('click', () => setPwm(button.dataset.pwm)));
     setPwm(currentPwm);
     let servoAngle = 0;
-    servoToggle.addEventListener('click', () => {
+    function toggleServo() {
       servoAngle = servoAngle === 0 ? 150 : 0;
       $('servoAngle').textContent = servoAngle === 0 ? 'Đóng · 0°' : 'Mở · 150°';
       servoToggle.textContent = servoAngle === 0 ? 'Mở' : 'Đóng';
       send('v' + servoAngle);
-    });
+    }
+    servoToggle.addEventListener('click', toggleServo);
     const motionButtons = [...document.querySelectorAll('[data-command]')].filter(btn => ['f', 'b', 'l', 'r'].includes(btn.dataset.command));
     const activePointerIds = new WeakMap();
     function releaseMotionButton(btn) {
@@ -2718,6 +2719,11 @@
       }
 
       const key = e.key.toLowerCase();
+      if (key === 'o' && !e.repeat) {
+        e.preventDefault();
+        if (!servoToggle.disabled) toggleServo();
+        return;
+      }
       const command = keyboardCommandMap[key];
       if (!command || e.repeat) return;
 
