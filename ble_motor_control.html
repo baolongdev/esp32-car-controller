@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>ESP32 Motor Control</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap');
     :root {
       --bg: #090d10;
       --surface: #111820;
@@ -1735,6 +1736,7 @@
         grid-row: auto;
       }
     }
+
     .header-actions {
       display: flex;
       align-items: center;
@@ -1782,16 +1784,190 @@
       }
     }
 
+    /* XPERT / NEXT HORIZON visual language: deep space, white HUD lines,
+       electric cyan and violet accents with angular hardware panels. */
+    :root {
+      --bg: #050b18;
+      --surface: #091426;
+      --surface-2: #10203a;
+      --metal: #182b48;
+      --border: #2e5b8e;
+      --accent: #42d9ff;
+      --accent-light: #c1f5ff;
+      --text: #f7fbff;
+      --muted: #91a9c4;
+      --cyan: #42d9ff;
+      --purple: #8068ff;
+      --danger: #ff5577;
+      --danger-dark: #46172e;
+    }
+
+    body {
+      position: relative;
+      background:
+        radial-gradient(circle at 78% 12%, #4230a82e 0 12%, transparent 36%),
+        radial-gradient(circle at 18% 72%, #087db52e 0 10%, transparent 32%),
+        linear-gradient(135deg, #040915 0%, #08162a 52%, #050a18 100%);
+      font-family: "Arial Narrow", "Rajdhani", "Chakra Petch", Inter, system-ui, sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .52;
+      background-image:
+        radial-gradient(circle, #ffffffb8 0 1px, transparent 1.5px),
+        radial-gradient(circle, #42d9ff99 0 1px, transparent 1.5px);
+      background-size: 83px 97px, 137px 151px;
+      background-position: 13px 21px, 47px 73px;
+      mask-image: linear-gradient(120deg, transparent 0%, black 28%, black 78%, transparent 100%);
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      border-bottom-color: #d9f7ff8c;
+      position: relative;
+    }
+
+    header::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: -1px;
+      width: 30%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent));
+      box-shadow: 0 0 12px #42d9ffb8;
+    }
+
+    .eyebrow,
+    .section-label,
+    .speed-value {
+      color: var(--accent-light);
+      text-shadow: 0 0 12px #42d9ff66;
+    }
+
+    h1 {
+      letter-spacing: .035em;
+      text-transform: uppercase;
+    }
+
+    .brand-mark {
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 0 16px #42d9ff55, inset 0 0 12px #42d9ff1c;
+    }
+
+    .card {
+      background:
+        linear-gradient(145deg, #142a49e8, #071326f2),
+        radial-gradient(circle at 80% 0%, #8068ff24, transparent 45%);
+      border-color: #3c72a8;
+      box-shadow: inset 0 1px #ffffff18, inset 0 -2px #000b,
+        0 10px 28px #0009, 0 0 18px #183e6b42;
+    }
+
+    .card::after {
+      opacity: .24;
+      background:
+        linear-gradient(#ffffff0b 1px, transparent 1px),
+        linear-gradient(90deg, #ffffff08 1px, transparent 1px),
+        repeating-linear-gradient(135deg, transparent 0 18px, #42d9ff0b 19px 20px);
+      background-size: 42px 42px, 42px 42px, auto;
+    }
+
+    .control-card::before,
+    .speed-card::before {
+      width: 72px;
+      background: linear-gradient(90deg, var(--accent), var(--purple));
+      box-shadow: 0 0 12px #42d9ff8a;
+    }
+
+    .connect,
+    .speed-preset[aria-pressed="true"],
+    .pad-item button:active,
+    .pad-item button.active,
+    .rotation-button:active:not(:disabled),
+    .rotation-button.active {
+      background: linear-gradient(135deg, #42d9ff, #7864ff) !important;
+      color: #06101f !important;
+      border-color: var(--accent-light) !important;
+      box-shadow: 0 0 18px #42d9ff70, inset 0 0 0 1px #ffffff80 !important;
+    }
+
+    .connect:hover,
+    .connect:focus-visible,
+    .speed-preset:not(:disabled):hover,
+    .speed-preset:not(:disabled):focus-visible,
+    .rotation-button:hover:not(:disabled),
+    .rotation-button:focus-visible {
+      border-color: var(--accent-light);
+      box-shadow: 0 0 14px #42d9ff75, inset 0 0 0 1px #ffffff28;
+    }
+
+    .speed-preset,
+    .pad-item button,
+    .rotation-button,
+    .servo-toggle {
+      background: linear-gradient(145deg, #173052, #0a172b);
+      border-color: #477db2;
+      box-shadow: inset 0 1px #ffffff18, inset 0 -4px 8px #0007,
+        0 3px 10px #0006;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+      border-color: #477db2;
+      background: linear-gradient(90deg, var(--accent) var(--progress, 71%), #142b49 var(--progress, 71%));
+    }
+
+    input[type=range]::-moz-range-track {
+      border-color: #477db2;
+      background: #142b49;
+    }
+
+    input[type=range]::-moz-range-progress {
+      background: var(--accent);
+    }
+
+    input[type=range]::-webkit-slider-thumb,
+    input[type=range]::-moz-range-thumb {
+      border-color: var(--accent-light);
+      background: #08172d;
+      box-shadow: 0 0 10px #42d9ffb8;
+    }
+
+    .dot.connected {
+      background: var(--accent);
+      box-shadow: 0 0 0 5px #42d9ff29, 0 0 14px #42d9ff;
+    }
+
+    .emergency {
+      background: linear-gradient(135deg, #4d1835, #241329);
+      border-color: #ff5577;
+      box-shadow: inset 0 1px #fff2, 0 0 14px #ff557733, 0 5px 14px #0007;
+    }
+
     @media (orientation: portrait) {
-      .header-actions { gap: 4px; }
+      .header-actions {
+        gap: 4px;
+      }
+
       .fullscreen-button {
         width: 38px;
         min-width: 38px;
         height: 38px;
       }
     }
+
     /* Responsive button sizing: adapts to viewport height instead of fixed pixels. */
     @media (orientation: landscape) {
+
       .linear-controls .pad-item button,
       .rotation-controls .pad-item button {
         width: 100%;
@@ -1802,6 +1978,7 @@
     }
 
     @media (orientation: landscape) and (max-height: 430px) {
+
       .linear-controls .pad-item button,
       .rotation-controls .pad-item button {
         height: clamp(60px, 19vh, 78px);
@@ -1812,8 +1989,9 @@
 
     /* Cân bằng các panel điều khiển trong landscape */
     @media (orientation: landscape) {
-      .control-layout > .linear-panel,
-      .control-layout > .pivot-panel {
+
+      .control-layout>.linear-panel,
+      .control-layout>.pivot-panel {
         grid-template-rows: auto 24px minmax(0, 1fr) auto;
         min-height: 0;
       }
@@ -1860,13 +2038,13 @@
         white-space: nowrap;
       }
 
-      .control-layout > .linear-panel .panel-footer,
-      .control-layout > .pivot-panel .panel-footer {
+      .control-layout>.linear-panel .panel-footer,
+      .control-layout>.pivot-panel .panel-footer {
         min-height: 42px;
         justify-content: flex-end;
       }
 
-      main > .speed-card {
+      main>.speed-card {
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(150px, .8fr);
         grid-template-rows: auto auto;
         min-height: 104px;
@@ -1874,18 +2052,18 @@
         row-gap: 4px;
       }
 
-      main > .speed-card .speed-line {
+      main>.speed-card .speed-line {
         grid-column: 1 / 3;
         grid-row: 1;
       }
 
-      main > .speed-card .speed-presets {
+      main>.speed-card .speed-presets {
         grid-column: 1 / 3;
         grid-row: 2;
         margin-top: 0;
       }
 
-      main > .speed-card .servo-control {
+      main>.speed-card .servo-control {
         grid-column: 3;
         grid-row: 1 / 3;
         margin-top: 0;
@@ -1895,8 +2073,9 @@
     }
 
     @media (orientation: landscape) and (max-height: 430px) {
-      .control-layout > .linear-panel,
-      .control-layout > .pivot-panel {
+
+      .control-layout>.linear-panel,
+      .control-layout>.pivot-panel {
         grid-template-rows: auto 20px minmax(0, 1fr) auto;
       }
 
@@ -1915,12 +2094,12 @@
         min-height: 44px;
       }
 
-      .control-layout > .linear-panel .panel-footer,
-      .control-layout > .pivot-panel .panel-footer {
+      .control-layout>.linear-panel .panel-footer,
+      .control-layout>.pivot-panel .panel-footer {
         min-height: 36px;
       }
 
-      main > .speed-card {
+      main>.speed-card {
         min-height: 96px;
         padding-block: 6px;
       }
@@ -1928,6 +2107,7 @@
 
     /* Landscape: nút co giãn kín toàn bộ chiều rộng + chiều cao panel */
     @media (orientation: landscape) {
+
       .linear-panel .linear-controls,
       .pivot-panel .rotation-controls {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1978,6 +2158,7 @@
     }
 
     @media (orientation: landscape) and (max-height: 430px) {
+
       .linear-panel .linear-controls,
       .pivot-panel .rotation-controls {
         margin-block: 2px;
@@ -1992,6 +2173,7 @@
 
     /* Portrait: nút lớn, giãn theo chiều cao màn hình */
     @media (orientation: portrait) {
+
       .linear-panel .linear-controls,
       .pivot-panel .rotation-controls {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2039,8 +2221,8 @@
         z-index: 1;
       }
 
-      .control-layout > .linear-panel,
-      .control-layout > .pivot-panel {
+      .control-layout>.linear-panel,
+      .control-layout>.pivot-panel {
         min-height: clamp(240px, 34vh, 320px);
       }
 
@@ -2083,6 +2265,7 @@
        ========================================================= */
 
     @media (orientation: landscape) {
+
       .linear-panel .linear-controls,
       .pivot-panel .rotation-controls {
         display: grid;
@@ -2098,8 +2281,8 @@
         align-content: stretch;
       }
 
-      .linear-panel .linear-controls > .pad-item,
-      .pivot-panel .rotation-controls > .pad-item {
+      .linear-panel .linear-controls>.pad-item,
+      .pivot-panel .rotation-controls>.pad-item {
         position: relative;
         display: block;
         width: 100%;
@@ -2112,8 +2295,8 @@
         padding: 0;
       }
 
-      .linear-panel .linear-controls > .pad-item > button,
-      .pivot-panel .rotation-controls > .pad-item > button {
+      .linear-panel .linear-controls>.pad-item>button,
+      .pivot-panel .rotation-controls>.pad-item>button {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -2137,11 +2320,11 @@
         justify-self: stretch;
         box-shadow: inset 0 1px #ffffff14, inset 0 -4px 8px #0005, 0 3px 8px #0005;
         transition: background-color 140ms ease, color 140ms ease,
-                    border-color 140ms ease, box-shadow 140ms ease, transform 80ms ease;
+          border-color 140ms ease, box-shadow 140ms ease, transform 80ms ease;
       }
 
-      .linear-panel .linear-controls > .pad-item > button > .control-label,
-      .pivot-panel .rotation-controls > .pad-item > button > .control-label {
+      .linear-panel .linear-controls>.pad-item>button>.control-label,
+      .pivot-panel .rotation-controls>.pad-item>button>.control-label {
         position: static;
         display: block;
         pointer-events: none;
@@ -2161,10 +2344,10 @@
     }
 
     /* Khi bấm/giữ, đổi màu vàng cho 4 nút điều khiển */
-    .linear-panel .linear-controls > .pad-item > button:active,
-    .linear-panel .linear-controls > .pad-item > button.active,
-    .pivot-panel .rotation-controls > .pad-item > button:active,
-    .pivot-panel .rotation-controls > .pad-item > button.active {
+    .linear-panel .linear-controls>.pad-item>button:active,
+    .linear-panel .linear-controls>.pad-item>button.active,
+    .pivot-panel .rotation-controls>.pad-item>button:active,
+    .pivot-panel .rotation-controls>.pad-item>button.active {
       background: linear-gradient(145deg, #ffdd6b, #f5b928) !important;
       color: #171205 !important;
       border-color: #ffe08a !important;
@@ -2172,22 +2355,22 @@
       transform: scale(.95);
     }
 
-    .linear-panel .linear-controls > .pad-item > button.active > .control-label,
-    .pivot-panel .rotation-controls > .pad-item > button.active > .control-label {
+    .linear-panel .linear-controls>.pad-item>button.active>.control-label,
+    .pivot-panel .rotation-controls>.pad-item>button.active>.control-label {
       color: #171205;
     }
 
     /* Nhãn trong button luôn theo màu icon, không tách rời */
-    .linear-panel .linear-controls > .pad-item > button > .control-label,
-    .pivot-panel .rotation-controls > .pad-item > button > .control-label {
+    .linear-panel .linear-controls>.pad-item>button>.control-label,
+    .pivot-panel .rotation-controls>.pad-item>button>.control-label {
       position: static !important;
       color: inherit !important;
       background: transparent !important;
     }
 
     /* 4 nút khi chưa kết nối: vẫn rõ ràng nhưng không khả dụng */
-    .linear-panel .linear-controls > .pad-item > button:disabled,
-    .pivot-panel .rotation-controls > .pad-item > button:disabled {
+    .linear-panel .linear-controls>.pad-item>button:disabled,
+    .pivot-panel .rotation-controls>.pad-item>button:disabled {
       cursor: not-allowed;
       opacity: .82;
       filter: none;
@@ -2195,23 +2378,23 @@
       background: linear-gradient(145deg, #222d35, #151d23);
       border-color: #3f4d56;
       box-shadow:
-        inset 0 1px rgba(255,255,255,.05),
-        inset 0 -3px 7px rgba(0,0,0,.35);
+        inset 0 1px rgba(255, 255, 255, .05),
+        inset 0 -3px 7px rgba(0, 0, 0, .35);
       transform: none;
       -webkit-text-fill-color: currentColor;
     }
 
-    .linear-panel .linear-controls > .pad-item > button:disabled .control-label,
-    .pivot-panel .rotation-controls > .pad-item > button:disabled .control-label {
+    .linear-panel .linear-controls>.pad-item>button:disabled .control-label,
+    .pivot-panel .rotation-controls>.pad-item>button:disabled .control-label {
       opacity: 1;
       color: inherit;
     }
 
     /* 4 nút hover: cùng viền vàng + glow */
-    .linear-panel .linear-controls > .pad-item > button:hover:not(:disabled),
-    .linear-panel .linear-controls > .pad-item > button:focus-visible,
-    .pivot-panel .rotation-controls > .pad-item > button:hover:not(:disabled),
-    .pivot-panel .rotation-controls > .pad-item > button:focus-visible {
+    .linear-panel .linear-controls>.pad-item>button:hover:not(:disabled),
+    .linear-panel .linear-controls>.pad-item>button:focus-visible,
+    .pivot-panel .rotation-controls>.pad-item>button:hover:not(:disabled),
+    .pivot-panel .rotation-controls>.pad-item>button:focus-visible {
       border-color: var(--accent);
       box-shadow: 0 0 10px #f5b92835, inset 0 1px #ffffff14;
     }
@@ -2221,7 +2404,7 @@
        linear-panel + pivot-panel (4 nút điều khiển)
        ========================================================= */
     @media (orientation: landscape) {
-      main > .speed-card {
+      main>.speed-card {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(135px, .32fr);
         grid-template-rows: auto auto;
@@ -2237,7 +2420,7 @@
         overflow: hidden;
       }
 
-      main > .speed-card .speed-line {
+      main>.speed-card .speed-line {
         grid-column: 1;
         grid-row: 1;
         display: flex;
@@ -2246,13 +2429,13 @@
         min-height: 0;
       }
 
-      main > .speed-card .section-label {
+      main>.speed-card .section-label {
         margin: 0;
         font-size: 11px;
         line-height: 1;
       }
 
-      main > .speed-card .speed-value {
+      main>.speed-card .speed-value {
         display: flex;
         align-items: center;
         gap: 6px;
@@ -2260,7 +2443,7 @@
         line-height: 1;
       }
 
-      main > .speed-card .speed-technical {
+      main>.speed-card .speed-technical {
         display: inline;
         margin: 0;
         font-size: 9px;
@@ -2268,7 +2451,7 @@
         white-space: nowrap;
       }
 
-      main > .speed-card .speed-presets {
+      main>.speed-card .speed-presets {
         grid-column: 1;
         grid-row: 2;
         display: grid;
@@ -2277,7 +2460,7 @@
         margin: 0;
       }
 
-      main > .speed-card .speed-preset {
+      main>.speed-card .speed-preset {
         min-height: 0;
         height: 28px;
         padding: 2px 6px;
@@ -2285,7 +2468,7 @@
         line-height: 1;
       }
 
-      main > .speed-card .servo-control {
+      main>.speed-card .servo-control {
         grid-column: 2;
         grid-row: 1 / 3;
         display: grid;
@@ -2296,7 +2479,7 @@
         align-self: stretch;
       }
 
-      main > .speed-card .servo-heading {
+      main>.speed-card .servo-heading {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -2304,13 +2487,13 @@
         min-width: 0;
       }
 
-      main > .speed-card .servo-heading strong {
+      main>.speed-card .servo-heading strong {
         font-size: 10px;
         line-height: 1;
         white-space: nowrap;
       }
 
-      main > .speed-card .servo-toggle {
+      main>.speed-card .servo-toggle {
         width: 100%;
         height: 28px;
         min-height: 0;
@@ -2320,22 +2503,1214 @@
     }
 
     @media (orientation: landscape) and (max-height: 430px) {
-      main > .speed-card {
+      main>.speed-card {
         height: 62px;
         min-height: 0;
         flex-basis: 62px;
         padding: 4px 8px;
       }
 
-      main > .speed-card .speed-value {
+      main>.speed-card .speed-value {
         font-size: 20px;
+      }
+
+      main>.speed-card .speed-preset,
+      main>.speed-card .servo-toggle {
+        height: 25px;
+        min-height: 0;
+        font-size: 9px;
+      }
+    }
+
+    /* =========================================================
+       FUTURE TECH HUD — visual pass based on supplied SVG boards
+       Keeps all BLE/control logic unchanged; style-only override.
+       ========================================================= */
+    :root {
+      --bg: #020714;
+      --surface: #071426;
+      --surface-2: #0b1f38;
+      --metal: #112a47;
+      --border: rgba(203, 239, 255, .78);
+      --accent: #41dfff;
+      --accent-light: #e7fbff;
+      --purple: #715cff;
+      --text: #f8fbff;
+      --muted: #94aac1;
+      --danger: #ff4e79;
+      --danger-dark: #351326;
+      --hud-white: #f7fbff;
+      --hud-line: rgba(231, 251, 255, .88);
+      --hud-blue: #2bd8ff;
+      --hud-violet: #765cff;
+      --panel-glass: rgba(6, 20, 38, .84);
+    }
+
+    html,
+    body {
+      background: #020714;
+    }
+
+    body {
+      position: relative;
+      background:
+        radial-gradient(circle at 82% 13%, rgba(100, 67, 255, .24), transparent 30%),
+        radial-gradient(circle at 15% 72%, rgba(0, 180, 255, .17), transparent 34%),
+        radial-gradient(circle at 53% 55%, rgba(12, 77, 143, .11), transparent 42%),
+        linear-gradient(135deg, #020611 0%, #061126 48%, #030817 100%);
+      font-family: "Arial Narrow", "Roboto Condensed", "Chakra Petch", Inter, system-ui, sans-serif;
+    }
+
+    body::before {
+      opacity: .55;
+      background-image:
+        radial-gradient(circle, rgba(255, 255, 255, .88) 0 1px, transparent 1.3px),
+        radial-gradient(circle, rgba(55, 216, 255, .78) 0 1px, transparent 1.4px),
+        radial-gradient(circle, rgba(125, 94, 255, .66) 0 1px, transparent 1.4px);
+      background-size: 91px 83px, 137px 151px, 211px 177px;
+      background-position: 17px 13px, 49px 77px, 91px 33px;
+      mask-image: linear-gradient(120deg, rgba(0, 0, 0, .3), #000 25%, #000 78%, rgba(0, 0, 0, .25));
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, transparent 0 48%, rgba(57, 211, 255, .025) 50%, transparent 52%),
+        linear-gradient(0deg, transparent 0 48%, rgba(116, 93, 255, .022) 50%, transparent 52%);
+      background-size: 160px 160px;
+      opacity: .55;
+    }
+
+    main {
+      position: relative;
+      isolation: isolate;
+      z-index: 1;
+      border: 1px solid rgba(231, 251, 255, .28);
+      background: linear-gradient(180deg, rgba(2, 10, 24, .34), rgba(1, 7, 18, .24));
+      clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
+      box-shadow: inset 0 0 0 1px rgba(65, 223, 255, .06), 0 0 30px rgba(20, 115, 255, .08);
+    }
+
+    main::before {
+      content: "";
+      position: absolute;
+      inset: 2px;
+      z-index: 20;
+      pointer-events: none;
+      clip-path: polygon(20px 0, calc(100% - 20px) 0, 100% 20px, 100% calc(100% - 20px), calc(100% - 20px) 100%, 20px 100%, 0 calc(100% - 20px), 0 20px);
+      border: 1px solid rgba(76, 215, 255, .18);
+      box-shadow: inset 0 0 18px rgba(58, 190, 255, .05);
+    }
+
+    .header {
+      position: relative;
+      min-height: 58px;
+      border: 0;
+      border-bottom: 2px solid rgba(247, 251, 255, .9);
+      background: linear-gradient(90deg, rgba(2, 10, 24, .72), rgba(7, 18, 44, .64) 58%, rgba(8, 16, 46, .84));
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .23);
+      clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%);
+    }
+
+    .header::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      bottom: -2px;
+      width: 88px;
+      height: 5px;
+      background: linear-gradient(90deg, var(--hud-blue), var(--hud-violet));
+      box-shadow: 0 0 13px rgba(65, 223, 255, .78);
+    }
+
+    .header::after {
+      right: 0;
+      bottom: -2px;
+      width: 23%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, rgba(65, 223, 255, .9));
+      box-shadow: 0 0 12px rgba(65, 223, 255, .75);
+    }
+
+    .header-brand {
+      position: relative;
+      gap: 16px;
+    }
+
+    .header-brand::after {
+      content: "";
+      flex: 0 0 50px;
+      width: 50px;
+      height: 9px;
+      margin-left: 2px;
+      opacity: .95;
+      background: repeating-linear-gradient(130deg,
+          var(--hud-white) 0 7px,
+          var(--hud-white) 7px 10px,
+          transparent 10px 15px);
+      clip-path: polygon(7px 0, 100% 0, calc(100% - 7px) 100%, 0 100%);
+    }
+
+    .eyebrow {
+      color: #bff6ff;
+      font-size: clamp(9px, 1vw, 12px);
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(65, 223, 255, .42);
+    }
+
+    h1 {
+      color: var(--hud-white);
+      margin-top: 2px;
+      font-family: Impact, "Arial Narrow", "Chakra Petch", sans-serif;
+      font-weight: 800;
+      letter-spacing: .055em;
+      text-transform: uppercase;
+      text-shadow: 0 2px 0 rgba(255, 255, 255, .05), 0 0 18px rgba(65, 223, 255, .12);
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(65, 223, 255, .9);
+      color: var(--hud-blue);
+      background: linear-gradient(145deg, rgba(10, 43, 71, .72), rgba(4, 14, 28, .92));
+      box-shadow: 0 0 18px rgba(65, 223, 255, .27), inset 0 0 0 1px rgba(255, 255, 255, .08);
+      clip-path: polygon(0 9px, 9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%);
+    }
+
+    .header-ble-status {
+      padding: 5px 10px;
+      border-left: 1px solid rgba(229, 249, 255, .35);
+      border-right: 1px solid rgba(65, 223, 255, .22);
+      background: linear-gradient(90deg, rgba(255, 255, 255, .018), rgba(65, 223, 255, .025));
+    }
+
+    .header-ble-copy strong {
+      color: #f8fbff;
+      font-weight: 800;
+      letter-spacing: .015em;
+    }
+
+    .header-ble-copy>span:not(.sr-only) {
+      color: #9ab2ca;
+      letter-spacing: .04em;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      background: #7c8fa6;
+      box-shadow: 0 0 0 4px rgba(131, 154, 177, .12);
+    }
+
+    .dot.connected {
+      background: #8cf3ff;
+      box-shadow: 0 0 0 4px rgba(65, 223, 255, .16), 0 0 16px #41dfff;
+    }
+
+    .card,
+    .panel {
+      position: relative;
+      background:
+        linear-gradient(145deg, rgba(15, 39, 68, .80), rgba(4, 16, 31, .90)),
+        radial-gradient(circle at 85% -5%, rgba(118, 92, 255, .14), transparent 42%);
+      border: 1px solid rgba(179, 231, 255, .34);
+      border-radius: 0;
+      clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+      box-shadow:
+        inset 0 1px rgba(255, 255, 255, .08),
+        inset 0 0 0 1px rgba(65, 223, 255, .035),
+        0 10px 25px rgba(0, 0, 0, .36),
+        0 0 18px rgba(26, 103, 198, .08);
+    }
+
+    .card::before,
+    .panel::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 14px;
+      width: 74px;
+      height: 3px;
+      background: linear-gradient(90deg, #fff 0 18%, var(--hud-blue) 18% 60%, var(--hud-violet));
+      box-shadow: 0 0 12px rgba(65, 223, 255, .5);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .card::after {
+      opacity: .18;
+      background:
+        linear-gradient(rgba(255, 255, 255, .035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(65, 223, 255, .03) 1px, transparent 1px),
+        repeating-linear-gradient(135deg, transparent 0 24px, rgba(116, 92, 255, .045) 25px 26px);
+      background-size: 48px 48px, 48px 48px, auto;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, .15), #000 18%, #000 80%, rgba(0, 0, 0, .1));
+    }
+
+    .section-label {
+      color: #dffaff;
+      font-family: "Arial Narrow", "Roboto Condensed", "Chakra Petch", sans-serif;
+      font-weight: 800;
+      letter-spacing: .045em;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(65, 223, 255, .24);
+    }
+
+    .section-label::after {
+      content: "";
+      display: inline-block;
+      width: 26px;
+      height: 1px;
+      margin-left: 8px;
+      vertical-align: middle;
+      background: linear-gradient(90deg, rgba(247, 251, 255, .82), transparent);
+    }
+
+    .speed-card {
+      border-top-color: rgba(203, 239, 255, .6);
+      background:
+        linear-gradient(90deg, rgba(8, 28, 50, .92), rgba(6, 17, 36, .88)),
+        radial-gradient(circle at 82% 0%, rgba(118, 92, 255, .18), transparent 45%);
+    }
+
+    .speed-value {
+      color: #dffaff;
+      font-family: Impact, "Arial Narrow", "Chakra Petch", sans-serif;
+      letter-spacing: .03em;
+      text-shadow: 0 0 14px rgba(65, 223, 255, .44);
+    }
+
+    .speed-preset,
+    .servo-toggle,
+    .fullscreen-button,
+    .linear-panel .linear-controls>.pad-item>button,
+    .pivot-panel .rotation-controls>.pad-item>button {
+      position: relative;
+      overflow: hidden;
+      color: #f2f8ff;
+      border: 1px solid rgba(154, 216, 247, .34) !important;
+      border-radius: 0 !important;
+      background:
+        linear-gradient(145deg, rgba(22, 51, 82, .83), rgba(6, 18, 35, .96)) !important;
+      clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px) !important;
+      box-shadow:
+        inset 0 1px rgba(255, 255, 255, .07),
+        inset 0 -8px 18px rgba(0, 0, 0, .18),
+        0 5px 14px rgba(0, 0, 0, .28) !important;
+      transition: transform 90ms ease, border-color 140ms ease, box-shadow 140ms ease, color 140ms ease, background 140ms ease;
+    }
+
+    .speed-preset::before,
+    .servo-toggle::before,
+    .linear-panel .linear-controls>.pad-item>button::before,
+    .pivot-panel .rotation-controls>.pad-item>button::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 34%;
+      height: 2px;
+      pointer-events: none;
+      background: linear-gradient(90deg, rgba(255, 255, 255, .92), rgba(65, 223, 255, .75), transparent);
+    }
+
+    .linear-panel .linear-controls>.pad-item>button::after,
+    .pivot-panel .rotation-controls>.pad-item>button::after {
+      content: "";
+      position: absolute;
+      right: 8px;
+      bottom: 7px;
+      width: 42px;
+      height: 7px;
+      opacity: .32;
+      background: repeating-linear-gradient(130deg, rgba(231, 251, 255, .85) 0 5px, transparent 5px 9px);
+      clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+      pointer-events: none;
+    }
+
+    .linear-panel .linear-controls>.pad-item>button,
+    .pivot-panel .rotation-controls>.pad-item>button {
+      color: rgba(237, 247, 255, .82) !important;
+      font-family: Impact, "Arial Narrow", "Chakra Petch", sans-serif;
+      font-weight: 400;
+      text-shadow: 0 0 16px rgba(65, 223, 255, .11);
+    }
+
+    .linear-panel .linear-controls>.pad-item>button>.control-label,
+    .pivot-panel .rotation-controls>.pad-item>button>.control-label {
+      color: rgba(227, 241, 252, .88) !important;
+      font-family: "Arial Narrow", "Roboto Condensed", "Chakra Petch", sans-serif;
+      font-weight: 800 !important;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+    }
+
+    .linear-panel .linear-controls>.pad-item>button:hover:not(:disabled),
+    .linear-panel .linear-controls>.pad-item>button:focus-visible,
+    .pivot-panel .rotation-controls>.pad-item>button:hover:not(:disabled),
+    .pivot-panel .rotation-controls>.pad-item>button:focus-visible,
+    .speed-preset:hover:not(:disabled),
+    .servo-toggle:hover:not(:disabled),
+    .fullscreen-button:hover {
+      color: #fff !important;
+      border-color: rgba(208, 246, 255, .85) !important;
+      background:
+        linear-gradient(145deg, rgba(24, 75, 113, .95), rgba(8, 28, 51, .98)) !important;
+      box-shadow: 0 0 16px rgba(65, 223, 255, .25), inset 0 0 0 1px rgba(65, 223, 255, .14) !important;
+    }
+
+    .linear-panel .linear-controls>.pad-item>button:active,
+    .linear-panel .linear-controls>.pad-item>button.active,
+    .pivot-panel .rotation-controls>.pad-item>button:active,
+    .pivot-panel .rotation-controls>.pad-item>button.active,
+    .speed-preset[aria-pressed="true"],
+    .servo-toggle:active:not(:disabled),
+    .fullscreen-button:active {
+      color: #06101d !important;
+      background: linear-gradient(135deg, #eafcff 0%, #54e3ff 46%, #8270ff 100%) !important;
+      border-color: #effdff !important;
+      box-shadow: 0 0 22px rgba(65, 223, 255, .52), 0 0 28px rgba(118, 92, 255, .22), inset 0 0 0 1px rgba(255, 255, 255, .74) !important;
+      text-shadow: none !important;
+      transform: translateY(1px) scale(.985);
+    }
+
+    .linear-panel .linear-controls>.pad-item>button:active>.control-label,
+    .linear-panel .linear-controls>.pad-item>button.active>.control-label,
+    .pivot-panel .rotation-controls>.pad-item>button:active>.control-label,
+    .pivot-panel .rotation-controls>.pad-item>button.active>.control-label {
+      color: #06101d !important;
+    }
+
+    .linear-panel .linear-controls>.pad-item>button:disabled,
+    .pivot-panel .rotation-controls>.pad-item>button:disabled,
+    .speed-preset:disabled,
+    .servo-toggle:disabled {
+      opacity: 1 !important;
+      color: rgba(205, 221, 235, .68) !important;
+      border-color: rgba(109, 157, 194, .27) !important;
+      background: linear-gradient(145deg, rgba(20, 39, 59, .74), rgba(7, 17, 29, .90)) !important;
+      box-shadow: inset 0 1px rgba(255, 255, 255, .035), inset 0 -6px 14px rgba(0, 0, 0, .20) !important;
+      filter: saturate(.78);
+    }
+
+    .linear-panel .linear-controls>.pad-item>button:disabled>.control-label,
+    .pivot-panel .rotation-controls>.pad-item>button:disabled>.control-label {
+      color: rgba(205, 221, 235, .66) !important;
+    }
+
+    .connect {
+      border: 1px solid rgba(222, 249, 255, .92) !important;
+      background: linear-gradient(135deg, #f2fdff 0%, #61e3ff 54%, #7668ff 100%) !important;
+      color: #06101c !important;
+      font-weight: 900;
+      letter-spacing: .02em;
+      text-transform: none;
+      box-shadow: 0 0 18px rgba(65, 223, 255, .32) !important;
+      clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px) !important;
+    }
+
+    .connect:hover,
+    .connect:focus-visible {
+      background: linear-gradient(135deg, #ffffff 0%, #85edff 48%, #8b7aff 100%) !important;
+      box-shadow: 0 0 22px rgba(65, 223, 255, .44), 0 0 26px rgba(118, 92, 255, .18) !important;
+    }
+
+    .fullscreen-button {
+      color: #eaf8ff;
+      border-color: rgba(198, 235, 255, .46) !important;
+    }
+
+    .servo-heading strong {
+      color: #d9f7ff;
+      font-weight: 800;
+      letter-spacing: .025em;
+    }
+
+    .panel-footer {
+      position: relative;
+      padding-top: 7px;
+    }
+
+    .panel-footer::before {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 16%;
+      right: 16%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(231, 251, 255, .22), transparent);
+    }
+
+    .drive-status {
+      color: #e9f7ff;
+      font-weight: 800;
+      letter-spacing: .012em;
+    }
+
+    .hint {
+      color: #8fa6bf;
+      letter-spacing: .018em;
+    }
+
+    .drive-status.is-moving::before {
+      background: var(--hud-blue);
+      box-shadow: 0 0 10px rgba(65, 223, 255, .82);
+    }
+
+    .speed-presets {
+      gap: 6px;
+    }
+
+    .speed-preset {
+      font-family: "Arial Narrow", "Roboto Condensed", "Chakra Petch", sans-serif;
+      font-weight: 900;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .emergency {
+      position: relative;
+      border: 1px solid rgba(255, 93, 133, .78) !important;
+      border-radius: 0;
+      background:
+        linear-gradient(90deg, rgba(55, 13, 35, .94), rgba(97, 19, 58, .78) 50%, rgba(44, 12, 31, .94));
+      color: #ffe5ed;
+      font-family: "Arial Narrow", "Roboto Condensed", "Chakra Petch", sans-serif;
+      font-weight: 900;
+      letter-spacing: .075em;
+      clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%, 0 8px);
+      box-shadow: inset 0 1px rgba(255, 255, 255, .10), 0 0 18px rgba(255, 78, 121, .16), 0 5px 14px rgba(0, 0, 0, .34);
+    }
+
+    .emergency::after {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 58px;
+      opacity: .16;
+      background: repeating-linear-gradient(130deg, rgba(255, 255, 255, .9) 0 6px, transparent 6px 11px);
+      pointer-events: none;
+    }
+
+    .emergency:active {
+      background: linear-gradient(90deg, #5c1737, #c32f5b 50%, #5c1737);
+      color: #fff;
+      box-shadow: 0 0 22px rgba(255, 78, 121, .36), inset 0 0 0 1px rgba(255, 255, 255, .15);
+    }
+
+    @media (orientation: landscape) {
+      main {
+        padding: 6px 10px;
+        gap: 8px;
+      }
+
+      .header {
+        min-height: 58px;
+      }
+
+      main>.speed-card {
+        height: 76px;
+        flex-basis: 76px;
+        border-left-color: rgba(65, 223, 255, .38);
+        border-right-color: rgba(118, 92, 255, .34);
+      }
+
+      .control-layout {
+        gap: 8px;
+      }
+
+      .linear-panel,
+      .pivot-panel {
+        padding: 14px;
+      }
+
+      .linear-panel .linear-controls,
+      .pivot-panel .rotation-controls {
+        gap: 9px;
+      }
+
+      .linear-panel .linear-controls>.pad-item>button,
+      .pivot-panel .rotation-controls>.pad-item>button {
+        min-height: 0 !important;
+        font-size: clamp(30px, 5.5vh, 46px);
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+      .header {
+        min-height: 48px;
+      }
+
+      .header-brand::after {
+        display: none;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      main>.speed-card {
+        height: 68px;
+        flex-basis: 68px;
+      }
+
+      .linear-panel,
+      .pivot-panel {
+        padding: 10px;
+      }
+    }
+
+    @media (orientation: portrait) {
+      main {
+        border-left: 0;
+        border-right: 0;
+        clip-path: none;
+      }
+
+      main::before {
+        display: none;
+      }
+
+      .header-brand::after {
+        display: none;
+      }
+
+      .card,
+      .panel {
+        clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+      }
+    }
+
+    /* Primary UI typeface */
+    body,
+    button,
+    input,
+    select,
+    textarea,
+    .eyebrow,
+    h1,
+    .section-label,
+    .speed-value,
+    .speed-technical,
+    .speed-preset,
+    .control-label,
+    .rotation-button,
+    .servo-toggle,
+    .emergency,
+    .footer {
+      font-family: "Be Vietnam Pro", system-ui, sans-serif !important;
+    }
+
+    h1 {
+      font-weight: 800;
+      letter-spacing: .025em;
+      line-height: 1.28 !important;
+      padding-top: .08em;
+      padding-bottom: .08em;
+      overflow: visible !important;
+      text-transform: none;
+    }
+
+    .header,
+    .header-brand,
+    .header-brand > div:first-child {
+      overflow: visible !important;
+    }
+
+    .eyebrow,
+    .section-label,
+    .speed-preset,
+    .emergency {
+      font-weight: 800;
+    }
+
+    /* Final layout fix: control buttons fill the panel in landscape. */
+    @media (orientation: landscape) {
+      .control-layout > .linear-panel,
+      .control-layout > .pivot-panel {
+        display: grid !important;
+        grid-template-rows: auto minmax(0, 1fr) auto !important;
+        min-height: 0 !important;
+      }
+
+      .linear-panel .linear-controls,
+      .pivot-panel .rotation-controls {
+        grid-row: 2 !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        grid-template-rows: minmax(0, 1fr) !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        align-self: stretch !important;
+        align-items: stretch !important;
+        align-content: stretch !important;
+        justify-content: stretch !important;
+        gap: 8px !important;
+        margin: 0 !important;
+      }
+
+      .control-layout > .linear-panel .panel-footer,
+      .control-layout > .pivot-panel .panel-footer {
+        grid-row: 3 !important;
+      }
+
+      .linear-panel .linear-controls > .pad-item,
+      .pivot-panel .rotation-controls > .pad-item {
+        display: flex !important;
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        align-self: stretch !important;
+        justify-self: stretch !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .linear-panel .linear-controls > .pad-item > button,
+      .pivot-panel .rotation-controls > .pad-item > button {
+        display: flex !important;
+        flex: 1 1 auto !important;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        max-width: none !important;
+        max-height: none !important;
+        margin: 0 !important;
+        box-sizing: border-box;
+      }
+    }
+
+    /* Servo uses the same component family as SLOW / MEDIUM / HIGH. */
+    .servo-control {
+      display: grid;
+      grid-template-rows: auto 28px;
+      gap: 6px;
+      margin-top: 0;
+      min-width: 0;
+    }
+
+    .servo-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .servo-heading .section-label {
+      margin: 0;
+    }
+
+    .servo-heading strong {
+      color: #dffaff;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: .03em;
+      white-space: nowrap;
+    }
+
+    .speed-preset,
+    .servo-toggle {
+      height: 28px;
+      min-height: 28px;
+      padding: 2px 8px;
+      border: 1px solid rgba(154, 216, 247, .34) !important;
+      background: linear-gradient(145deg, rgba(22, 51, 82, .83), rgba(6, 18, 35, .96)) !important;
+      color: #f2f8ff;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .servo-toggle {
+      width: 100%;
+    }
+
+    .speed-preset:disabled,
+    .servo-toggle:disabled {
+      opacity: 1 !important;
+      color: rgba(205, 221, 235, .68) !important;
+      border-color: rgba(109, 157, 194, .27) !important;
+      background: linear-gradient(145deg, rgba(20, 39, 59, .74), rgba(7, 17, 29, .90)) !important;
+    }
+
+    .servo-toggle:not(:disabled):hover,
+    .servo-toggle:not(:disabled):focus-visible {
+      color: #fff !important;
+      border-color: rgba(208, 246, 255, .85) !important;
+      box-shadow: 0 0 16px rgba(65, 223, 255, .25), inset 0 0 0 1px rgba(65, 223, 255, .14) !important;
+    }
+
+    .servo-toggle:not(:disabled):active {
+      color: #06101d !important;
+      background: linear-gradient(135deg, #eafcff 0%, #54e3ff 46%, #8270ff 100%) !important;
+      border-color: #effdff !important;
+      box-shadow: 0 0 22px rgba(65, 223, 255, .52), inset 0 0 0 1px rgba(255, 255, 255, .74) !important;
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+      .servo-control {
+        grid-template-rows: auto 25px;
+        gap: 4px;
+      }
+
+      .servo-heading strong {
+        font-size: 9px;
+      }
+
+      .servo-toggle {
+        height: 25px;
+        min-height: 25px;
+        font-size: 9px;
+      }
+    }
+
+    /* Servo shares the exact speed-preset rows in the landscape speed card. */
+    :root {
+      --speed-control-height: 28px;
+    }
+
+    @media (orientation: landscape) {
+      main > .speed-card .servo-control {
+        display: contents !important;
+      }
+
+      main > .speed-card .speed-line {
+        grid-column: 1 / 3 !important;
+        grid-row: 1 !important;
+      }
+
+      main > .speed-card .speed-presets {
+        grid-column: 1 / 3 !important;
+        grid-row: 2 !important;
+        align-self: stretch !important;
+        height: var(--speed-control-height) !important;
+      }
+
+      main > .speed-card .servo-heading {
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin: 0 !important;
+        min-width: 0 !important;
+      }
+
+      main > .speed-card .servo-toggle {
+        grid-column: 3 !important;
+        grid-row: 2 !important;
+        align-self: stretch !important;
+        justify-self: stretch !important;
       }
 
       main > .speed-card .speed-preset,
       main > .speed-card .servo-toggle {
-        height: 25px;
-        min-height: 0;
-        font-size: 9px;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        height: var(--speed-control-height) !important;
+        min-height: var(--speed-control-height) !important;
+        max-height: var(--speed-control-height) !important;
+        margin: 0 !important;
+        padding: 2px 8px !important;
+        font-size: 10px !important;
+        line-height: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+      :root {
+        --speed-control-height: 25px;
+      }
+
+      main > .speed-card .speed-preset,
+      main > .speed-card .servo-toggle {
+        height: var(--speed-control-height) !important;
+        min-height: var(--speed-control-height) !important;
+        max-height: var(--speed-control-height) !important;
+        font-size: 9px !important;
+      }
+    }
+
+    /* Control states: normal -> hover -> active, Future Tech HUD Option 1. */
+    :root {
+      --hover-bg: linear-gradient(145deg, #184b71, #081c33);
+      --hover-border: #9beeff;
+      --hover-glow: rgba(66, 217, 255, .32);
+      --active-bg: linear-gradient(135deg, #eafcff 0%, #54e3ff 45%, #8068ff 100%);
+      --active-text: #06101d;
+      --active-border: #effdff;
+      --active-glow: rgba(66, 217, 255, .55);
+    }
+
+    .speed-preset:hover:not(:disabled),
+    .servo-toggle:hover:not(:disabled),
+    .fullscreen-button:hover,
+    .linear-button:hover:not(:disabled),
+    .rotation-button:hover:not(:disabled) {
+      color: #fff !important;
+      background: var(--hover-bg) !important;
+      border-color: var(--hover-border) !important;
+      box-shadow: 0 0 14px var(--hover-glow),
+        inset 0 0 0 1px rgba(255, 255, 255, .12) !important;
+    }
+
+    .speed-preset:focus-visible,
+    .servo-toggle:focus-visible,
+    .fullscreen-button:focus-visible,
+    .linear-button:focus-visible,
+    .rotation-button:focus-visible {
+      outline: 2px solid var(--hover-border);
+      outline-offset: 2px;
+    }
+
+    .speed-preset:active:not(:disabled),
+    .speed-preset[aria-pressed="true"],
+    .servo-toggle:active:not(:disabled),
+    .linear-button:active:not(:disabled),
+    .linear-button.active,
+    .rotation-button:active:not(:disabled),
+    .rotation-button.active,
+    .fullscreen-button:active {
+      color: var(--active-text) !important;
+      background: var(--active-bg) !important;
+      border-color: var(--active-border) !important;
+      box-shadow: 0 0 18px var(--active-glow),
+        0 0 28px rgba(128, 104, 255, .25),
+        inset 0 0 0 1px rgba(255, 255, 255, .72) !important;
+      text-shadow: none !important;
+      transform: translateY(1px) scale(.985);
+    }
+
+    .linear-button.active > .control-label,
+    .rotation-button.active > .control-label {
+      color: var(--active-text) !important;
+    }
+
+    .emergency:hover:not(:disabled) {
+      color: #fff !important;
+      background: linear-gradient(90deg, #5c1737, #9e2454 50%, #5c1737) !important;
+      border-color: #ff9ab5 !important;
+      box-shadow: 0 0 18px rgba(255, 78, 121, .38),
+        inset 0 0 0 1px rgba(255, 255, 255, .15) !important;
+    }
+
+    .emergency:active:not(:disabled) {
+      color: #fff !important;
+      background: linear-gradient(90deg, #7e1c48, #df3e70 50%, #7e1c48) !important;
+      border-color: #ffd5e0 !important;
+      box-shadow: 0 0 22px rgba(255, 78, 121, .55),
+        inset 0 0 0 1px rgba(255, 255, 255, .2) !important;
+    }
+
+    /* Subtle HUD motion: lively without distracting from driving controls. */
+    body::before {
+      animation: starfieldDrift 26s linear infinite;
+    }
+
+    body::after {
+      animation: gridDrift 18s linear infinite;
+    }
+
+    main::before {
+      animation: framePulse 4s ease-in-out infinite;
+    }
+
+    .header::before {
+      width: clamp(118px, 42%, 420px);
+      height: 4px;
+      background: linear-gradient(90deg,
+        #ffffff 0%,
+        #42d9ff 22%,
+        #ffffff 38%,
+        #765cff 58%,
+        #42d9ff 78%,
+        #ffffff 100%);
+      background-size: 220% 100%;
+      animation: energyBarFlow 2.2s linear infinite,
+        energyBarPulse 1.4s ease-in-out infinite alternate,
+        energyBarLength 2.8s ease-in-out infinite;
+      transform-origin: left center;
+    }
+
+    .header::after {
+      animation: energyLine 1.8s ease-in-out infinite,
+        energyLineMorph 3.6s ease-in-out infinite;
+    }
+
+    .card::after {
+      animation: panelScan 8s linear infinite;
+    }
+
+    .card::before,
+    .panel::before {
+      transform-origin: left center;
+      animation: panelAccentPulse 3.2s ease-in-out infinite alternate;
+    }
+
+    .dot.connected {
+      animation: connectedPulse 1.8s ease-in-out infinite;
+    }
+
+    .connect:not(:disabled),
+    .servo-toggle:not(:disabled) {
+      transition: transform 120ms ease, filter 180ms ease, box-shadow 180ms ease;
+    }
+
+    .connect:not(:disabled):hover,
+    .servo-toggle:not(:disabled):hover,
+    .speed-preset:not(:disabled):hover,
+    .linear-button:not(:disabled):hover,
+    .rotation-button:not(:disabled):hover {
+      animation: buttonHoverGlow 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes starfieldDrift {
+      from { background-position: 17px 13px, 49px 77px, 91px 33px; }
+      to { background-position: 57px 43px, 9px 117px, 151px 83px; }
+    }
+
+    @keyframes gridDrift {
+      from { background-position: 0 0; }
+      to { background-position: 160px 160px; }
+    }
+
+    @keyframes framePulse {
+      0%, 100% { opacity: .72; box-shadow: inset 0 0 18px rgba(58, 190, 255, .04); }
+      50% { opacity: 1; box-shadow: inset 0 0 22px rgba(58, 190, 255, .12), 0 0 12px rgba(118, 92, 255, .08); }
+    }
+
+    @keyframes energySweep {
+      0%, 100% { opacity: .72; transform: scaleX(.78); }
+      50% { opacity: 1; transform: scaleX(1); }
+    }
+
+    @keyframes energyBarFlow {
+      0% { background-position: 100% 0; }
+      100% { background-position: -120% 0; }
+    }
+
+    @keyframes energyBarPulse {
+      0% {
+        opacity: .65;
+        box-shadow: 0 0 8px rgba(65, 223, 255, .38);
+      }
+      100% {
+        opacity: 1;
+        box-shadow: 0 0 18px rgba(65, 223, 255, .9),
+          0 0 28px rgba(118, 92, 255, .45);
+      }
+    }
+
+    @keyframes energyBarLength {
+      0%, 100% {
+        width: clamp(118px, 26%, 280px);
+        height: 3px;
+      }
+      35% {
+        width: clamp(150px, 52%, 520px);
+        height: 5px;
+      }
+      68% {
+        width: clamp(132px, 38%, 390px);
+        height: 4px;
+      }
+    }
+
+    @keyframes energyLineMorph {
+      0%, 100% { width: 15%; }
+      38% { width: 42%; }
+      72% { width: 26%; }
+    }
+
+    @keyframes energyLine {
+      0%, 100% { opacity: .45; transform: scaleX(.7); transform-origin: right; }
+      50% { opacity: 1; transform: scaleX(1); }
+    }
+
+    @keyframes panelScan {
+      0% { background-position: 0 0, 0 0, 0 0; }
+      100% { background-position: 0 48px, 48px 0, 80px 0; }
+    }
+
+    @keyframes panelAccentPulse {
+      0% { transform: scaleX(.58); opacity: .62; }
+      55% { transform: scaleX(1); opacity: 1; }
+      100% { transform: scaleX(1.28); opacity: .8; }
+    }
+
+    @keyframes connectedPulse {
+      0%, 100% { filter: brightness(.9); }
+      50% { filter: brightness(1.35); }
+    }
+
+    @keyframes buttonHoverGlow {
+      from { filter: brightness(1); }
+      to { filter: brightness(1.16); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body::before,
+      body::after,
+      main::before,
+      .header::before,
+      .header::after,
+      .card::after,
+      .dot.connected,
+      .connect:not(:disabled):hover,
+      .servo-toggle:not(:disabled):hover,
+      .speed-preset:not(:disabled):hover,
+      .linear-button:not(:disabled):hover,
+      .rotation-button:not(:disabled):hover {
+        animation: none !important;
+      }
+    }
+    /* Premium HUD motion: startup, tactile controls and BLE feedback. */
+    @keyframes hudReveal {
+      0% { opacity: 0; transform: translateY(4px); clip-path: inset(0 100% 0 0); }
+      70% { opacity: 1; transform: translateY(0); clip-path: inset(0 0 0 0); }
+      100% { opacity: 1; transform: translateY(0); clip-path: inset(0 0 0 0); }
+    }
+
+    @keyframes hudLightSweep {
+      0% { transform: translateX(-130%); opacity: 0; }
+      20% { opacity: .9; }
+      100% { transform: translateX(170%); opacity: 0; }
+    }
+
+    @keyframes energyBurst {
+      0% { box-shadow: 0 0 0 rgba(66,217,255,0); }
+      35% { box-shadow: 0 0 24px rgba(66,217,255,.62), 0 0 32px rgba(128,104,255,.28); }
+      100% { box-shadow: 0 0 8px rgba(66,217,255,.22); }
+    }
+
+    /* Startup runs once and never blocks interaction handlers. */
+    main > header { animation: hudReveal 300ms cubic-bezier(.2,.8,.2,1) 60ms both; }
+    main > .speed-card { animation: hudReveal 300ms cubic-bezier(.2,.8,.2,1) 140ms both; }
+    main > .control-layout > .linear-panel { animation: hudReveal 300ms cubic-bezier(.2,.8,.2,1) 220ms both; }
+    main > .control-layout > .pivot-panel { animation: hudReveal 300ms cubic-bezier(.2,.8,.2,1) 300ms both; }
+    main > .control-layout > .emergency { animation: hudReveal 300ms cubic-bezier(.2,.8,.2,1) 380ms both; }
+
+    /* Hover uses one light sweep; held controls remain visually stable. */
+    .linear-button,
+    .rotation-button,
+    .speed-preset,
+    .servo-toggle {
+      animation: none !important;
+      transition: transform 140ms ease, color 140ms ease, background 180ms ease,
+        border-color 140ms ease, box-shadow 180ms ease, filter 140ms ease !important;
+    }
+
+    .linear-button::before,
+    .rotation-button::before,
+    .speed-preset::before,
+    .servo-toggle::before {
+      background: linear-gradient(90deg, transparent, #ffffffed 45%, #42d9ff 60%, transparent) !important;
+      background-size: 220% 100% !important;
+      background-position: 130% 0 !important;
+    }
+
+    .linear-button:hover:not(:disabled),
+    .rotation-button:hover:not(:disabled) {
+      transform: translateY(-1px) !important;
+      filter: brightness(1.08);
+    }
+
+    .linear-button:hover:not(:disabled)::before,
+    .rotation-button:hover:not(:disabled)::before,
+    .speed-preset:hover:not(:disabled)::before,
+    .servo-toggle:hover:not(:disabled)::before {
+      animation: hudLightSweep 520ms ease-out 1 !important;
+    }
+
+    .linear-button:active:not(:disabled),
+    .linear-button.active,
+    .rotation-button:active:not(:disabled),
+    .rotation-button.active {
+      animation: energyBurst 220ms ease-out 1 !important;
+      transform: translateY(1px) scale(.985) !important;
+    }
+
+    .linear-button:active:not(:disabled)::after,
+    .linear-button.active::after,
+    .rotation-button:active:not(:disabled)::after,
+    .rotation-button.active::after {
+      opacity: .82 !important;
+    }
+
+    .speed-preset[aria-pressed="true"] {
+      animation: energyBurst 220ms ease-out 1 !important;
+    }
+
+    .speed-preset[aria-pressed="true"]::before {
+      animation: hudLightSweep 620ms ease-out 1 !important;
+    }
+
+    /* BLE connection states. */
+    .dot.is-connecting {
+      position: relative;
+      animation: none !important;
+    }
+
+    .dot.is-connecting::before,
+    .dot.is-connecting::after {
+      content: "";
+      position: absolute;
+      inset: -5px;
+      border: 1px solid #42d9ffb8;
+      border-radius: 50%;
+      animation: connectionRing 1.6s ease-out infinite;
+      pointer-events: none;
+    }
+
+    .dot.is-connecting::after { animation-delay: 800ms; }
+    .dot.connected { animation: connectionBreath 4s ease-in-out 1; }
+
+    @keyframes connectionRing {
+      0% { transform: scale(.55); opacity: .9; }
+      100% { transform: scale(2.1); opacity: 0; }
+    }
+
+    @keyframes connectionBreath {
+      0% { filter: brightness(2); box-shadow: 0 0 0 4px #42d9ff44, 0 0 28px #42d9ff; }
+      25% { filter: brightness(1.5); box-shadow: 0 0 0 7px #42d9ff2e, 0 0 22px #42d9ff; }
+      100% { filter: brightness(1); box-shadow: 0 0 0 4px #42d9ff1c, 0 0 12px #42d9ff88; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      main > header,
+      main > .speed-card,
+      main > .control-layout > .linear-panel,
+      main > .control-layout > .pivot-panel,
+      main > .control-layout > .emergency,
+      .linear-button,
+      .rotation-button,
+      .speed-preset,
+      .servo-toggle,
+      .dot.is-connecting::before,
+      .dot.is-connecting::after,
+      .dot.connected {
+        animation: none !important;
       }
     }
   </style>
@@ -2362,7 +3737,8 @@
       </div>
       <div class="header-actions">
         <button class="connect header-connect-button" id="connectBtn">Kết nối thiết bị</button>
-        <button class="fullscreen-button" id="fullscreenBtn" type="button" aria-label="Bật toàn màn hình" title="Bật toàn màn hình">⛶</button>
+        <button class="fullscreen-button" id="fullscreenBtn" type="button" aria-label="Bật toàn màn hình"
+          title="Bật toàn màn hình">⛶</button>
       </div>
     </header>
 
@@ -2377,7 +3753,8 @@
         <button class="speed-preset" type="button" data-pwm="255" aria-pressed="false">HIGH</button>
       </div>
       <div class="servo-control">
-        <div class="servo-heading"><span class="section-label">Servo</span><strong id="servoAngle">Nâng · 0°</strong></div>
+        <div class="servo-heading"><span class="section-label">Servo</span><strong id="servoAngle">Nâng · 0°</strong>
+        </div>
         <button id="servoToggle" class="servo-toggle" type="button" disabled>Hạ</button>
       </div>
     </section>
@@ -2403,12 +3780,12 @@
         <div class="rotation-description">Hai bánh quay ngược chiều</div>
         <div class="rotation-controls">
           <div class="pad-item">
-            <button id="turnLeftBtn" class="rotation-button" data-command="l"
-              aria-label="Xoay trái tại chỗ" title="Xoay trái tại chỗ">↺<span class="control-label">Xoay trái</span></button>
+            <button id="turnLeftBtn" class="rotation-button" data-command="l" aria-label="Xoay trái tại chỗ"
+              title="Xoay trái tại chỗ">↺<span class="control-label">Xoay trái</span></button>
           </div>
           <div class="pad-item">
-            <button id="turnRightBtn" class="rotation-button" data-command="r"
-              aria-label="Xoay phải tại chỗ" title="Xoay phải tại chỗ">↻<span class="control-label">Xoay phải</span></button>
+            <button id="turnRightBtn" class="rotation-button" data-command="r" aria-label="Xoay phải tại chỗ"
+              title="Xoay phải tại chỗ">↻<span class="control-label">Xoay phải</span></button>
           </div>
         </div>
         <div class="panel-footer">
@@ -2479,7 +3856,7 @@
           lastError = error;
           rxChar = null;
           txChar = null;
-          try { if (selectedDevice.gatt?.connected) selectedDevice.gatt.disconnect(); } catch (_) {}
+          try { if (selectedDevice.gatt?.connected) selectedDevice.gatt.disconnect(); } catch (_) { }
           if (attempt < 3) await wait(350 * attempt);
         }
       }
