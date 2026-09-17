@@ -2377,8 +2377,8 @@
         <button class="speed-preset" type="button" data-pwm="255" aria-pressed="false">HIGH</button>
       </div>
       <div class="servo-control">
-        <div class="servo-heading"><span class="section-label">Servo</span><strong id="servoAngle">Đóng · 0°</strong></div>
-        <button id="servoToggle" class="servo-toggle" type="button" disabled>Mở</button>
+        <div class="servo-heading"><span class="section-label">Servo</span><strong id="servoAngle">Nâng · 0°</strong></div>
+        <button id="servoToggle" class="servo-toggle" type="button" disabled>Hạ</button>
       </div>
     </section>
 
@@ -2642,8 +2642,8 @@
     let servoAngle = 0;
     function toggleServo() {
       servoAngle = servoAngle === 0 ? 150 : 0;
-      $('servoAngle').textContent = servoAngle === 0 ? 'Đóng · 0°' : 'Mở · 150°';
-      servoToggle.textContent = servoAngle === 0 ? 'Mở' : 'Đóng';
+      $('servoAngle').textContent = servoAngle === 0 ? 'Nâng · 0°' : 'Hạ · 150°';
+      servoToggle.textContent = servoAngle === 0 ? 'Hạ' : 'Nâng';
       send('v' + servoAngle);
     }
     servoToggle.addEventListener('click', toggleServo);
