@@ -2640,9 +2640,10 @@
     speedPresets.forEach(button => button.addEventListener('click', () => setPwm(button.dataset.pwm)));
     setPwm(currentPwm);
     let servoAngle = 0;
+    const servoLowerAngle = 45;
     function toggleServo() {
-      servoAngle = servoAngle === 0 ? 150 : 0;
-      $('servoAngle').textContent = servoAngle === 0 ? 'Nâng · 0°' : 'Hạ · 150°';
+      servoAngle = servoAngle === 0 ? servoLowerAngle : 0;
+      $('servoAngle').textContent = servoAngle === 0 ? 'Nâng · 0°' : 'Hạ · 45°';
       servoToggle.textContent = servoAngle === 0 ? 'Hạ' : 'Nâng';
       send('v' + servoAngle);
     }
