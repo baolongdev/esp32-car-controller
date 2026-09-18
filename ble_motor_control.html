@@ -4196,7 +4196,9 @@
       $('fullscreenBtn').setAttribute('aria-label', isFullscreen ? 'Thoát toàn màn hình' : 'Bật toàn màn hình');
       $('fullscreenBtn').title = isFullscreen ? 'Thoát toàn màn hình' : 'Bật toàn màn hình';
     });
-    let currentPwm = 0;
+    // Mặc định MEDIUM để nhấn nút là xe có thể chạy ngay sau khi kết nối.
+    // Người dùng vẫn có thể đổi sang SLOW/HIGH bằng các preset.
+    let currentPwm = 217;
     function setPwm(value) {
       currentPwm = Math.max(0, Math.min(255, Number(value) || 0));
       const percent = Math.round(currentPwm / 255 * 100);

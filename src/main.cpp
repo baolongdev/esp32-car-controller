@@ -12,7 +12,9 @@ constexpr uint32_t PWM_FREQUENCY = 20000;
 constexpr uint8_t PWM_RESOLUTION = 8;
 constexpr bool STARTUP_MOTOR_TEST = false;
 constexpr uint8_t DEBUG_LED_COUNT = 1;
-constexpr bool DETAILED_SERIAL_LOG = true;
+// Log chi tiết từng packet có thể làm nghẽn USB CDC khi monitor đóng hoặc
+// khi web gửi burst. Bật lại thành true khi cần debug bằng Serial Monitor.
+constexpr bool DETAILED_SERIAL_LOG = false;
 constexpr char FIRMWARE_VERSION[] = "motor-servo-ledc-v4";
 constexpr uint32_t SERVO_PWM_FREQUENCY = 50;
 // ESP32-S3 LEDC tối đa 14-bit; 16-bit khiến ledcAttachChannel() FAIL.
@@ -510,23 +512,37 @@ void handleCommand(char command) {
 // -----------------------------------------------------------------------------
 
 void handleLine(
-    String line,
+    const char* rawLine,
     uint16_t connId = ESP_GATT_IF_NONE,
     bool fromSerial = false) {
-  line.trim();
-  if (line.length() == 0) return;
+  if (rawLine == nullptr) return;
+
+  // Parse bằng buffer cố định để BLE command không tạo nhiều String tạm,
+  // tránh phân mảnh heap sau thời gian chạy dài.
+  char line[sizeof(CommandPacket::data)] = {};
+  strncpy(line, rawLine, sizeof(line) - 1);
+  line[sizeof(line) - 1] = '\0';
+
+  char* start = line;
+  while (*start != '\0' && isspace(static_cast<unsigned char>(*start))) {
+    ++start;
+  }
+  char* end = start + strlen(start);
+  while (end > start && isspace(static_cast<unsigned char>(end[-1]))) {
+    --end;
+    *end = '\0';
+  }
+  if (*start == '\0') return;
 
   if (VERBOSE_BLE_RX || DETAILED_SERIAL_LOG) {
     Serial.printf("[RX %lu] source=%s conn=%u auth=%s data=\"%s\"\n",
                   millis(), fromSerial ? "SERIAL" : "BLE", connId,
-                  bleAuthorized ? "YES" : "NO", line.c_str());
+                  bleAuthorized ? "YES" : "NO", start);
   }
 
-  // AUTH vẫn xử lý ngay trong callback để web không timeout.
-  if (line.startsWith("AUTH:")) {
-    const String password = line.substring(5);
-
-    if (password == ACTIVE_DEVICE.blePassword) {
+  // AUTH xử lý trong controlTask; callback BLE chỉ enqueue dữ liệu.
+  if (strncmp(start, "AUTH:", 5) == 0) {
+    if (strcmp(start + 5, ACTIVE_DEVICE.blePassword) == 0) {
       if (connId != ESP_GATT_IF_NONE &&
           bleAuthorized &&
           authorizedConnId != ESP_GATT_IF_NONE &&
@@ -562,10 +578,10 @@ void handleLine(
   }
 
   const char command = static_cast<char>(
-      tolower(static_cast<unsigned char>(line[0])));
+      tolower(static_cast<unsigned char>(start[0])));
 
-  if (command == 'v' && line.length() > 1) {
-    const int angle = constrain(line.substring(1).toInt(), 0, 180);
+  if (command == 'v' && start[1] != '\0') {
+    const int angle = constrain(atoi(start + 1), 0, 180);
     queueServoAngle(angle);
     char response[32];
     snprintf(response, sizeof(response), "SERVO=%d", angle);
@@ -575,8 +591,8 @@ void handleLine(
 
   // f100 / b100 / l150 / r150
   if ((command == 'f' || command == 'b' || command == 'l' || command == 'r') &&
-      line.length() > 1) {
-    motorSpeed = constrain(line.substring(1).toInt(), 0, 255);
+      start[1] != '\0') {
+    motorSpeed = constrain(atoi(start + 1), 0, 255);
 
     // Motor đổi NGAY khi RX đến. Không chờ notify và không chờ loop timer.
     applyMotion(command, motorSpeed);
@@ -724,10 +740,7 @@ void setupBle() {
 // -----------------------------------------------------------------------------
 
 void processCommandPacket(const CommandPacket& packet) {
-  handleLine(
-      String(packet.data),
-      packet.connId,
-      packet.fromSerial);
+  handleLine(packet.data, packet.connId, packet.fromSerial);
 }
 
 void controlTask(void*) {
@@ -747,8 +760,11 @@ void controlTask(void*) {
     // Drain a small burst without blocking. The queue is bounded and old
     // packets are discarded when full, so slider/button spam cannot create a
     // long FIFO delay.
-    while (xQueueReceive(commandQueue, &packet, 0) == pdTRUE) {
+    uint8_t processed = 0;
+    while (processed < 4 &&
+           xQueueReceive(commandQueue, &packet, 0) == pdTRUE) {
       processCommandPacket(packet);
+      ++processed;
     }
 
     processPendingServo();
