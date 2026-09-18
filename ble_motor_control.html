@@ -3965,7 +3965,10 @@
     let device, rxChar, txChar;
     let bleWriteRunning = false;
     let pendingMotionPayload = null;
-    const pendingOtherPayloads = [];
+    // Servo cũng là một trạng thái, không phải FIFO. Nếu người dùng bấm
+    // nhiều lần liên tục, chỉ cần gửi góc mới nhất để tránh backlog.
+    let pendingServoPayload = null;
+    const BLE_WRITE_INTERVAL_MS = 10;
     const bleEncoder = new TextEncoder();
     let isConnecting = false;
     let disconnectHandler = null;
@@ -4048,7 +4051,16 @@
         }
         if (device && disconnectHandler) device.removeEventListener('gattserverdisconnected', disconnectHandler);
         device = selectedDevice;
-        disconnectHandler = () => { pendingMotionPayload = null; pendingOtherPayloads.length = 0; setRotationAvailability(false); setStatus('Mất kết nối với xe'); setSystemStatus('Mất kết nối với xe'); $('connectBtn').textContent = 'Kết nối lại'; rxChar = null; txChar = null; };
+        disconnectHandler = () => {
+          pendingMotionPayload = null;
+          pendingServoPayload = null;
+          setRotationAvailability(false);
+          setStatus('Mất kết nối với xe');
+          setSystemStatus('Mất kết nối với xe');
+          $('connectBtn').textContent = 'Kết nối lại';
+          rxChar = null;
+          txChar = null;
+        };
         device.addEventListener('gattserverdisconnected', disconnectHandler);
         const characteristics = await connectGattWithRetry(device);
         rxChar = characteristics.rx;
@@ -4096,8 +4108,9 @@
           if (pendingMotionPayload !== null) {
             payload = pendingMotionPayload;
             pendingMotionPayload = null;
-          } else if (pendingOtherPayloads.length > 0) {
-            payload = pendingOtherPayloads.shift();
+          } else if (pendingServoPayload !== null) {
+            payload = pendingServoPayload;
+            pendingServoPayload = null;
           } else {
             break;
           }
@@ -4112,15 +4125,21 @@
           }
           console.log('[BLE TX SENT]', performance.now().toFixed(1), payload);
           $('lastCommand').textContent = payload;
+
+          // writeWithoutResponse vẫn có thể làm đầy buffer BLE nếu xả trong
+          // cùng một tick. Nhịp nhỏ này giữ phản hồi nhanh nhưng không burst.
+          if (pendingMotionPayload !== null || pendingServoPayload !== null) {
+            await wait(BLE_WRITE_INTERVAL_MS);
+          }
         }
       } catch (e) {
         pendingMotionPayload = null;
-        pendingOtherPayloads.length = 0;
+        pendingServoPayload = null;
         setStatus('Mất kết nối với xe');
         setSystemStatus('Không thể gửi lệnh điều khiển');
       } finally {
         bleWriteRunning = false;
-        if (pendingMotionPayload !== null || pendingOtherPayloads.length > 0) {
+        if (pendingMotionPayload !== null || pendingServoPayload !== null) {
           queueMicrotask(pumpBleWrites);
         }
       }
@@ -4137,8 +4156,8 @@
       if (['f', 'b', 'l', 'r', 's'].includes(command)) {
         pendingMotionPayload = payload;
       } else {
-        // Servo hoặc command phụ dùng chung pump, nằm sau motor.
-        pendingOtherPayloads.push(payload);
+        // Servo dùng chung pump nhưng chỉ giữ góc mới nhất.
+        pendingServoPayload = payload;
       }
       console.log('[BLE TX QUEUE]', performance.now().toFixed(1), payload);
       pumpBleWrites();

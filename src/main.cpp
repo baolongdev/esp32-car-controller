@@ -3,6 +3,9 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <Adafruit_NeoPixel.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
+#include <freertos/task.h>
 #include "device_config.h"
 
 constexpr uint32_t PWM_FREQUENCY = 20000;
@@ -50,6 +53,19 @@ bool bleConnected = false;
 bool bleAuthorized = false;
 uint16_t authorizedConnId = ESP_GATT_IF_NONE;
 
+// BLE callbacks must stay short. Incoming commands are copied to this queue
+// and processed by a dedicated FreeRTOS task instead of the BLE host task.
+struct CommandPacket {
+  char data[40];
+  uint16_t connId;
+  bool fromSerial;
+};
+
+QueueHandle_t commandQueue = nullptr;
+TaskHandle_t controlTaskHandle = nullptr;
+volatile bool ledStopRequested = false;
+volatile bool advertisingRestartRequested = false;
+
 // Trùng với giá trị mặc định của thanh tốc độ trong giao diện web.
 int motorSpeed = 0;
 String commandLine;
@@ -68,6 +84,25 @@ uint32_t lastBleNotifyAt = 0;
 
 void clearDebugLed();
 void setStoppedLed();
+void processCommandPacket(const CommandPacket& packet);
+
+bool enqueueCommand(const char* data, uint16_t connId, bool fromSerial) {
+  if (commandQueue == nullptr || data == nullptr) return false;
+
+  CommandPacket packet{};
+  strncpy(packet.data, data, sizeof(packet.data) - 1);
+  packet.data[sizeof(packet.data) - 1] = '\0';
+  packet.connId = connId;
+  packet.fromSerial = fromSerial;
+
+  // Never block the BLE callback. If a burst fills the queue, discard the
+  // oldest packet and keep the newest command for lower control latency.
+  if (xQueueSend(commandQueue, &packet, 0) == pdTRUE) return true;
+
+  CommandPacket discarded{};
+  xQueueReceive(commandQueue, &discarded, 0);
+  return xQueueSend(commandQueue, &packet, 0) == pdTRUE;
+}
 
 // -----------------------------------------------------------------------------
 // LED
@@ -575,15 +610,19 @@ void handleLine(
 void onBleConnected(uint16_t connId = ESP_GATT_IF_NONE) {
   bleConnected = true;
 
-  // Kết nối nhưng chưa chạy => LED vẫn tắt.
-  setStoppedLed();
-
+  // Kết nối nhưng chưa chạy => dừng motor ngay. LED/Serial xử lý ngoài
+  // callback để không chặn BLE host task.
+  stopMotors();
+  ledStopRequested = true;
   Serial.printf("BLE da ket noi, connId=%u - dang cho mat khau\n", connId);
 }
 
 void onBleDisconnected(BLEServer* server, uint16_t connId = ESP_GATT_IF_NONE) {
-  // Fail-safe: mất BLE thì xe dừng ngay và LED tắt ngay.
-  applyMotion('s', 0);
+  // Fail-safe: dừng PWM ngay. Các thao tác LED/advertising được defer.
+  // Không gọi NeoPixel.show() hoặc BLE API dài trong callback.
+  stopMotors();
+  currentMotion = 's';
+  ledStopRequested = true;
 
   if (connId == ESP_GATT_IF_NONE ||
       authorizedConnId == ESP_GATT_IF_NONE ||
@@ -596,10 +635,7 @@ void onBleDisconnected(BLEServer* server, uint16_t connId = ESP_GATT_IF_NONE) {
   bleConnected = server != nullptr && server->getConnectedCount() > 0;
 
   Serial.printf("BLE ngat ket noi, connId=%u\n", connId);
-
-  if (server != nullptr) {
-    server->getAdvertising()->start();
-  }
+  advertisingRestartRequested = true;
 }
 
 class BleServerCallbacks : public BLEServerCallbacks {
@@ -628,7 +664,7 @@ class BleRxCallbacks : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic* characteristic) override {
     String value = characteristic->getValue();
     if (value.length() > 0) {
-      handleLine(value);
+      enqueueCommand(value.c_str(), ESP_GATT_IF_NONE, false);
     }
   }
 
@@ -638,7 +674,7 @@ class BleRxCallbacks : public BLECharacteristicCallbacks {
       esp_ble_gatts_cb_param_t* param) override {
     String value = characteristic->getValue();
     if (value.length() > 0) {
-      handleLine(value, param->write.conn_id);
+      enqueueCommand(value.c_str(), param->write.conn_id, false);
     }
   }
 #endif
@@ -687,8 +723,60 @@ void setupBle() {
 // Setup / loop
 // -----------------------------------------------------------------------------
 
+void processCommandPacket(const CommandPacket& packet) {
+  handleLine(
+      String(packet.data),
+      packet.connId,
+      packet.fromSerial);
+}
+
+void controlTask(void*) {
+  CommandPacket packet{};
+
+  for (;;) {
+    if (ledStopRequested) {
+      ledStopRequested = false;
+      setStoppedLed();
+    }
+
+    if (advertisingRestartRequested && bleServer != nullptr) {
+      advertisingRestartRequested = false;
+      bleServer->getAdvertising()->start();
+    }
+
+    // Drain a small burst without blocking. The queue is bounded and old
+    // packets are discarded when full, so slider/button spam cannot create a
+    // long FIFO delay.
+    while (xQueueReceive(commandQueue, &packet, 0) == pdTRUE) {
+      processCommandPacket(packet);
+    }
+
+    processPendingServo();
+    flushBleMessage();
+    vTaskDelay(pdMS_TO_TICKS(1));
+  }
+}
+
 void setup() {
   Serial.begin(115200);
+
+  commandQueue = xQueueCreate(12, sizeof(CommandPacket));
+  if (commandQueue == nullptr) {
+    Serial.println(F("ERROR: command queue allocation failed"));
+  } else {
+    // Core 1 is also where Arduino loopTask normally runs. A dedicated task
+    // keeps BLE callbacks short while preserving deterministic motor control.
+    const BaseType_t taskCreated = xTaskCreatePinnedToCore(
+        controlTask,
+        "controlTask",
+        6144,
+        nullptr,
+        3,
+        &controlTaskHandle,
+        1);
+    Serial.printf("FreeRTOS control task: %s\n",
+                  taskCreated == pdPASS ? "OK" : "FAIL");
+  }
 
   // Đưa các ngõ vào DRV8833 về LOW ngay khi MCU bắt đầu chạy.
   // Không chờ BLE/servo để tránh bánh xe giật hoặc quay lúc khởi động.
@@ -724,17 +812,12 @@ void setup() {
 }
 
 void loop() {
-  processPendingServo();
-
-  // BLE TX được flush ngoài callback để callback RX luôn ngắn và motor phản hồi nhanh.
-  flushBleMessage();
-
   while (Serial.available() > 0) {
     const char received = static_cast<char>(Serial.read());
 
     if (received == '\r' || received == '\n') {
       // USB Serial dùng để debug/test trực tiếp, không cần BLE AUTH.
-      handleLine(commandLine, ESP_GATT_IF_NONE, true);
+      enqueueCommand(commandLine.c_str(), ESP_GATT_IF_NONE, true);
       commandLine = "";
     } else if (commandLine.length() < 15) {
       commandLine += received;
