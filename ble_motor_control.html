@@ -3873,6 +3873,18 @@
         gap: 4px !important;
       }
     }
+    /* Prevent browser long-press/context UI from stealing control input. */
+    .linear-button,
+    .rotation-button,
+    #emergency,
+    #servoToggle,
+    .speed-preset {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      touch-action: manipulation;
+    }
 </style>
 </head>
 
@@ -4206,16 +4218,40 @@
     servoToggle.addEventListener('click', toggleServo);
     const motionButtons = [...document.querySelectorAll('[data-command]')].filter(btn => ['f', 'b', 'l', 'r'].includes(btn.dataset.command));
     const activePointerIds = new WeakMap();
+    let activeMotionButton = null;
+    let activeMotionPointerId = null;
+
+    // Ngăn context menu/long-press của trình duyệt trên vùng điều khiển.
+    // Nếu không chặn, nhấn giữ nút xe trên mobile/Chrome có thể mở menu
+    // Back/Forward/Reload thay vì giữ lệnh motor.
+    document.querySelectorAll(
+      '.linear-button, .rotation-button, #emergency, #servoToggle, .speed-preset'
+    ).forEach(button => {
+      button.addEventListener('contextmenu', event => event.preventDefault());
+      button.addEventListener('dragstart', event => event.preventDefault());
+    });
+
     function releaseMotionButton(btn) {
       if (!btn.classList.contains('active')) return;
+
+      const pointerId = activePointerIds.get(btn);
       btn.classList.remove('active');
       activePointerIds.delete(btn);
+      if (activeMotionButton === btn &&
+          (activeMotionPointerId === null || activeMotionPointerId === pointerId)) {
+        activeMotionButton = null;
+        activeMotionPointerId = null;
+      }
       send('s');
     }
     function deactivateMotionButton(btn) {
       if (!btn.classList.contains('active')) return;
       btn.classList.remove('active');
       activePointerIds.delete(btn);
+      if (activeMotionButton === btn) {
+        activeMotionButton = null;
+        activeMotionPointerId = null;
+      }
     }
     function stopAllMotion() {
       let wasMoving = false;
@@ -4228,27 +4264,46 @@
     motionButtons.forEach(btn => {
       btn.addEventListener('pointerdown', e => {
         if (btn.disabled) return;
+        // Chỉ nhận pointer chính. Pointer phụ không được tạo STOP ngoài ý muốn.
+        if (e.isPrimary === false) return;
         e.preventDefault();
         // Đổi hướng là một trạng thái mới, không cần gửi STOP trung gian.
         motionButtons.forEach(other => { if (other !== btn) deactivateMotionButton(other); });
         activePointerIds.set(btn, e.pointerId);
+        activeMotionButton = btn;
+        activeMotionPointerId = e.pointerId;
         if (btn.setPointerCapture) btn.setPointerCapture(e.pointerId);
         btn.classList.add('active');
         send(btn.dataset.command);
       });
       btn.addEventListener('pointerup', e => {
-        if (activePointerIds.get(btn) === e.pointerId) releaseMotionButton(btn);
+        if (activeMotionButton === btn && activeMotionPointerId === e.pointerId) {
+          releaseMotionButton(btn);
+        }
       });
       btn.addEventListener('pointercancel', e => {
-        if (activePointerIds.get(btn) === e.pointerId) releaseMotionButton(btn);
+        if (activeMotionButton === btn && activeMotionPointerId === e.pointerId) {
+          releaseMotionButton(btn);
+        }
       });
-      btn.addEventListener('lostpointercapture', () => {
-        // Một số mobile browser mất pointerup khi pointer capture bị hủy.
-        if (btn.classList.contains('active')) stopAllMotion();
+      btn.addEventListener('lostpointercapture', e => {
+        // Chỉ giải phóng đúng nút/pointer đang giữ. Không dừng xe vì một
+        // pointer capture không liên quan hoặc một pointer phụ.
+        if (activeMotionButton === btn && activeMotionPointerId === e.pointerId) {
+          releaseMotionButton(btn);
+        }
       });
     });
-    window.addEventListener('pointerup', stopAllMotion);
-    window.addEventListener('pointercancel', stopAllMotion);
+    window.addEventListener('pointerup', e => {
+      if (activeMotionButton && activeMotionPointerId === e.pointerId) {
+        releaseMotionButton(activeMotionButton);
+      }
+    });
+    window.addEventListener('pointercancel', e => {
+      if (activeMotionButton && activeMotionPointerId === e.pointerId) {
+        releaseMotionButton(activeMotionButton);
+      }
+    });
     window.addEventListener('blur', stopAllMotion);
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) stopAllMotion();
