@@ -3999,6 +3999,16 @@
     function setDriveStatus(text) { $('driveStatus').textContent = text; $('driveStatus').classList.toggle('is-moving', text !== 'Xe đang dừng'); }
     function setStatus(text, connected = false) { $('status').textContent = text; $('dot').classList.toggle('connected', connected); $('signal').textContent = connected ? '●' : '—'; setSystemStatus(connected ? 'Xe sẵn sàng điều khiển' : 'Hãy kết nối thiết bị để bắt đầu'); }
     const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const PASSWORD_KEY = 'bleMotorPassword';
+    const DEFAULT_PASS = '123456';
+    function getBlePassword() {
+      // Tự động lấy mật khẩu: ưu tiên mật khẩu đã lưu, nếu chưa lưu thì
+      // lưu sẵn giá trị mặc định. Không hỏi người dùng để kết nối nhanh.
+      const saved = localStorage.getItem(PASSWORD_KEY);
+      if (saved) return saved;
+      localStorage.setItem(PASSWORD_KEY, DEFAULT_PASS);
+      return DEFAULT_PASS;
+    }
     async function authenticateBle(password) {
       setStatus('Đang xác thực…');
       const result = new Promise((resolve, reject) => {
@@ -4053,14 +4063,7 @@
           filters: [{ namePrefix: 'ESP32-MOTOR' }],
           optionalServices: [SERVICE]
         });
-        const password = window.prompt('Nhập mật khẩu kết nối thiết bị:');
-        if (password === null) {
-          isConnecting = false;
-          $('connectBtn').disabled = false;
-          $('connectBtn').textContent = 'Kết nối thiết bị';
-          $('dot').classList.remove('is-connecting');
-          return;
-        }
+        const password = getBlePassword();
         if (device && disconnectHandler) device.removeEventListener('gattserverdisconnected', disconnectHandler);
         device = selectedDevice;
         disconnectHandler = () => {
