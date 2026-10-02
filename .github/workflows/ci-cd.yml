@@ -1,0 +1,85 @@
+name: CI and Vercel deployment
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_ORG_ID: team_I3XPfYat7sZ0Dd1lLNJQnbcZ
+  VERCEL_PROJECT_ID: prj_KhqvPL56Vm4Z8rgqzgnZ27vJchEL
+
+jobs:
+  validate-web:
+    name: Validate web files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check page and Vercel rewrite
+        run: |
+          node -e "const fs = require('node:fs'); const config = JSON.parse(fs.readFileSync('vercel.json', 'utf8')); if (!fs.existsSync('ble_motor_control.html')) throw new Error('ble_motor_control.html is missing'); if (!config.rewrites?.some(rule => rule.source === '/' && rule.destination === '/ble_motor_control.html')) throw new Error('Vercel rewrite for / is missing'); console.log('Web page and Vercel rewrite are valid.');"
+
+  build-firmware:
+    name: Build ESP32-S3 firmware
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PlatformIO
+        run: python -m pip install --upgrade platformio
+
+      - name: Build firmware
+        run: pio run -e esp32-s3-super-mini
+
+  deploy-production:
+    name: Deploy production to Vercel
+    needs: [validate-web]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check Vercel token is configured
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "GitHub Actions secret VERCEL_TOKEN is missing. Add a valid Vercel access token to repository Actions secrets."
+            exit 1
+          fi
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Deploy production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel deploy --prod --yes --token="$VERCEL_TOKEN"
